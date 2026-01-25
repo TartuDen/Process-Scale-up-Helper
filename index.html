@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Mixing Scale-Up Helper</title>
+    <title>Process Scale-up Helper</title>
     <style>
       :root {
         --ink: #1a1a1a;
@@ -31,7 +31,7 @@
       }
 
       header {
-        padding: 36px 18px 20px;
+        padding: 38px 18px 18px;
         text-align: center;
       }
 
@@ -44,7 +44,7 @@
 
       header p {
         margin: 10px auto 0;
-        max-width: 720px;
+        max-width: 760px;
         color: var(--ink-muted);
         font-size: clamp(14px, 1.6vw, 18px);
       }
@@ -57,133 +57,67 @@
         gap: 22px;
       }
 
-      .panel {
+      .cards {
+        display: grid;
+        gap: 18px;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      }
+
+      .card {
         background: var(--panel);
         border-radius: 18px;
         box-shadow: 0 14px 30px var(--shadow);
         padding: 20px;
+        display: grid;
+        gap: 10px;
         animation: rise 0.8s ease both;
       }
 
-      .panel:nth-of-type(2) {
+      .card:nth-of-type(2) {
         background: var(--panel-2);
         animation-delay: 0.08s;
       }
 
-      .panel h2 {
-        margin: 0 0 12px;
+      .card h2 {
+        margin: 0;
         font-size: 20px;
-        letter-spacing: 0.2px;
       }
 
-      .grid {
-        display: grid;
-        gap: 14px;
-        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      }
-
-      .field {
-        display: grid;
-        gap: 6px;
-      }
-
-      label {
-        font-size: 13px;
+      .card p {
+        margin: 0;
         color: var(--ink-muted);
-        min-height: 32px;
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        flex-wrap: wrap;
+        font-size: 14px;
+        line-height: 1.5;
       }
 
-      .help {
+      .card a {
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        width: 16px;
-        height: 16px;
-        margin-left: 6px;
-        border-radius: 50%;
-        border: 1px solid rgba(26, 26, 26, 0.25);
-        font-size: 11px;
-        color: var(--ink-muted);
-        position: relative;
-        cursor: help;
-      }
-
-      .help::after {
-        content: attr(data-tooltip);
-        position: absolute;
-        left: 50%;
-        bottom: 140%;
-        transform: translateX(-50%);
-        background: #1f2a2f;
-        color: #f7f5f0;
-        padding: 8px 10px;
-        border-radius: 8px;
-        font-size: 12px;
-        line-height: 1.3;
-        min-width: 180px;
-        max-width: 240px;
-        text-align: left;
-        opacity: 0;
-        pointer-events: none;
-        transition: opacity 0.2s ease;
-      }
-
-      .help::before {
-        content: "";
-        position: absolute;
-        left: 50%;
-        bottom: 120%;
-        transform: translateX(-50%);
-        border-width: 6px;
-        border-style: solid;
-        border-color: #1f2a2f transparent transparent transparent;
-        opacity: 0;
-        transition: opacity 0.2s ease;
-      }
-
-      .help:hover::after,
-      .help:hover::before {
-        opacity: 1;
-      }
-
-      input {
-        border: 1px solid #d4cfc6;
-        border-radius: 10px;
-        padding: 10px 12px;
-        font-size: 15px;
-        background: #fff;
-        color: var(--ink);
-      }
-
-      input:focus {
-        outline: 2px solid rgba(192, 107, 62, 0.35);
-        border-color: var(--accent);
-      }
-
-      .results {
-        margin-top: 14px;
-        padding-top: 14px;
-        border-top: 1px dashed rgba(0, 0, 0, 0.2);
-      }
-
-      .pill {
-        display: inline-block;
-        padding: 4px 10px;
+        padding: 10px 16px;
         border-radius: 999px;
-        background: rgba(46, 106, 138, 0.12);
-        color: var(--accent-2);
-        font-size: 12px;
-        margin-top: 4px;
+        background: var(--accent);
+        color: #fff;
+        text-decoration: none;
+        font-size: 14px;
+        width: fit-content;
       }
 
-      .note {
-        font-size: 12px;
+      .card small {
         color: var(--ink-muted);
-        margin-top: 6px;
+      }
+
+      .link-row {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+
+      .secondary {
+        background: transparent;
+        color: var(--accent-2);
+        border: 1px solid rgba(46, 106, 138, 0.4);
       }
 
       footer {
@@ -203,399 +137,48 @@
           transform: translateY(0);
         }
       }
-
-      @media (max-width: 720px) {
-        header {
-          padding-top: 28px;
-        }
-      }
     </style>
   </head>
   <body>
     <header>
-      <h1>Mixing Scale-Up Helper</h1>
+      <h1>Process Scale-up Helper</h1>
       <p>
-        Prototype for agitated-tank scale-up. Choose a rule (keep P/V or keep tip speed),
-        enter lab data, and see plant-scale outputs.
-      </p>
-      <p>
-        Need help selecting Np or impeller setup? See the
-        <a href="np-guide.html">Impeller & Np guide</a>.
+        Choose a calculator to estimate scale-up conditions for mixing or heat-transfer
+        performance. No login, no backend, just quick engineering checks.
       </p>
     </header>
 
     <main>
-      <section class="panel" id="keep-pv">
-        <h2>Keep P/V Constant</h2>
-        <div class="grid">
-          <div class="field">
-            <label for="pv-rho">Density rho (g/mL)</label>
-            <input id="pv-rho" type="number" step="any" placeholder="e.g. 1 for water" />
+      <section class="cards">
+        <article class="card">
+          <h2>Stirring Scale-up</h2>
+          <p>
+            Compare constant P/V vs constant tip speed for agitated tanks. Includes
+            Reynolds regime guidance and impeller Np reference.
+          </p>
+          <div class="link-row">
+            <a href="mixing.html">Open Mixing Tool</a>
+            <a class="secondary" href="np-guide.html">Impeller & Np Guide</a>
           </div>
-          <div class="field">
-            <label for="pv-mu">
-              Viscosity mu (Pa*s)
-              <span class="help" data-tooltip="Dynamic viscosity of the fluid. Use Pa*s (1 mPa*s = 0.001 Pa*s).">?</span>
-            </label>
-            <input id="pv-mu" type="number" step="any" placeholder="e.g. 0.001 for water" />
-          </div>
-          <div class="field">
-            <label for="pv-np-lab">
-              Power number lab Np
-              <span class="help" data-tooltip="Dimensionless power number for the lab impeller in the given flow regime.">?</span>
-            </label>
-            <input id="pv-np-lab" type="number" step="any" placeholder="e.g. 3.5" />
-          </div>
-          <div class="field">
-            <label for="pv-d-lab">
-              Impeller diameter lab D (mm)
-              <span class="help" data-tooltip="Impeller diameter used in the lab tank.">?</span>
-            </label>
-            <input id="pv-d-lab" type="number" step="any" placeholder="e.g. 100" />
-          </div>
-          <div class="field">
-            <label for="pv-rpm-lab">
-              Agitator speed lab (rpm)
-              <span class="help" data-tooltip="Lab impeller speed in revolutions per minute.">?</span>
-            </label>
-            <input id="pv-rpm-lab" type="number" step="any" placeholder="e.g. 300" />
-          </div>
-          <div class="field">
-            <label for="pv-v-lab">
-              Working volume lab (L)
-              <span class="help" data-tooltip="Liquid working volume in the lab vessel.">?</span>
-            </label>
-            <input id="pv-v-lab" type="number" step="any" placeholder="e.g. 2" />
-          </div>
-          <div class="field">
-            <label for="pv-d-plant">
-              Impeller diameter plant D (mm)
-              <span class="help" data-tooltip="Impeller diameter for the plant-scale tank.">?</span>
-            </label>
-            <input id="pv-d-plant" type="number" step="any" placeholder="e.g. 1200" />
-          </div>
-          <div class="field">
-            <label for="pv-v-plant">
-              Working volume plant (L)
-              <span class="help" data-tooltip="Liquid working volume at plant scale.">?</span>
-            </label>
-            <input id="pv-v-plant" type="number" step="any" placeholder="e.g. 6000" />
-          </div>
-          <div class="field">
-            <label for="pv-np-plant">
-              Power number plant Np
-              <span class="help" data-tooltip="Power number for the plant impeller; can differ from lab if geometry differs.">?</span>
-            </label>
-            <input id="pv-np-plant" type="number" step="any" placeholder="e.g. 3.5" />
-          </div>
-        </div>
-        <div class="results grid">
-          <div class="field">
-            <label>
-              N lab (1/s)
-              <span class="help" data-tooltip="Impeller rotational speed in revolutions per second (rpm/60).">?</span>
-            </label>
-            <input id="pv-n-lab" readonly />
-          </div>
-          <div class="field">
-            <label>Tip speed lab (m/s)</label>
-            <input id="pv-ut-lab" readonly />
-          </div>
-          <div class="field">
-            <label>Power lab (W)</label>
-            <input id="pv-p-lab" readonly />
-          </div>
-          <div class="field">
-            <label>P/V lab (W/m3)</label>
-            <input id="pv-pv-lab" readonly />
-          </div>
-          <div class="field">
-            <label>
-              Re lab
-              <span class="help" data-tooltip="Mixing Reynolds number = rho * N * D^2 / mu. Indicates flow regime.">?</span>
-              <span class="pill" id="pv-regime-lab">--</span>
-            </label>
-            <input id="pv-re-lab" readonly />
-          </div>
-          <div class="field">
-            <label>Power plant (W)</label>
-            <input id="pv-p-plant" readonly />
-          </div>
-          <div class="field">
-            <label>
-              N plant (1/s)
-              <span class="help" data-tooltip="Impeller rotational speed in revolutions per second (rpm/60).">?</span>
-            </label>
-            <input id="pv-n-plant" readonly />
-          </div>
-          <div class="field">
-            <label>rpm plant</label>
-            <input id="pv-rpm-plant" readonly />
-          </div>
-          <div class="field">
-            <label>Tip speed plant (m/s)</label>
-            <input id="pv-ut-plant" readonly />
-          </div>
-          <div class="field">
-            <label>
-              Re plant
-              <span class="help" data-tooltip="Mixing Reynolds number = rho * N * D^2 / mu. Indicates flow regime.">?</span>
-              <span class="pill" id="pv-regime-plant">--</span>
-            </label>
-            <input id="pv-re-plant" readonly />
-          </div>
-          <div class="field">
-            <label>Torque plant (N*m)</label>
-            <input id="pv-torque" readonly />
-          </div>
-          <div class="field">
-            <label>P/V plant (W/m3)</label>
-            <input id="pv-pv-plant" readonly />
-          </div>
-        </div>
-        <div class="note">
-          Use when energy input per volume should match lab behavior (e.g., mixing time or suspension scaling).
-          P/V is power per unit volume, using P = Np * rho * N^3 * D^5.
-        </div>
-      </section>
+          <small>Best for mixing time, suspension, and shear-sensitive scale-up checks.</small>
+        </article>
 
-      <section class="panel" id="keep-tip">
-        <h2>Keep Tip Speed Constant</h2>
-        <div class="grid">
-          <div class="field">
-            <label for="tip-rho">
-              Density rho (g/mL)
-              <span class="help" data-tooltip="Fluid density used for Reynolds and power calculations.">?</span>
-            </label>
-            <input id="tip-rho" type="number" step="any" placeholder="e.g. 1 for water" />
+        <article class="card">
+          <h2>Heating Scale-up (UA)</h2>
+          <p>
+            Estimate UA from dynamic response or LMTD, then compare cooling capacity
+            vs reaction heat generation.
+          </p>
+          <div class="link-row">
+            <a href="heating.html">Open Heating Tool</a>
           </div>
-          <div class="field">
-            <label for="tip-mu">
-              Viscosity mu (Pa*s)
-              <span class="help" data-tooltip="Dynamic viscosity of the fluid. Use Pa*s (1 mPa*s = 0.001 Pa*s).">?</span>
-            </label>
-            <input id="tip-mu" type="number" step="any" placeholder="e.g. 0.001 for water" />
-          </div>
-          <div class="field">
-            <label for="tip-np-plant">
-              Power number plant Np
-              <span class="help" data-tooltip="Power number for the plant impeller.">?</span>
-            </label>
-            <input id="tip-np-plant" type="number" step="any" placeholder="e.g. 3.5" />
-          </div>
-          <div class="field">
-            <label for="tip-d-lab">
-              Impeller diameter lab D (mm)
-              <span class="help" data-tooltip="Impeller diameter used in the lab tank.">?</span>
-            </label>
-            <input id="tip-d-lab" type="number" step="any" placeholder="e.g. 100" />
-          </div>
-          <div class="field">
-            <label for="tip-rpm-lab">
-              Agitator speed lab (rpm)
-              <span class="help" data-tooltip="Lab impeller speed in revolutions per minute.">?</span>
-            </label>
-            <input id="tip-rpm-lab" type="number" step="any" placeholder="e.g. 300" />
-          </div>
-          <div class="field">
-            <label for="tip-d-plant">
-              Impeller diameter plant D (mm)
-              <span class="help" data-tooltip="Impeller diameter for the plant-scale tank.">?</span>
-            </label>
-            <input id="tip-d-plant" type="number" step="any" placeholder="e.g. 1200" />
-          </div>
-          <div class="field">
-            <label for="tip-v-plant">
-              Working volume plant (L)
-              <span class="help" data-tooltip="Liquid working volume at plant scale.">?</span>
-            </label>
-            <input id="tip-v-plant" type="number" step="any" placeholder="e.g. 6000" />
-          </div>
-        </div>
-        <div class="results grid">
-          <div class="field">
-            <label>
-              N lab (1/s)
-              <span class="help" data-tooltip="Impeller rotational speed in revolutions per second (rpm/60).">?</span>
-            </label>
-            <input id="tip-n-lab" readonly />
-          </div>
-          <div class="field">
-            <label>Tip speed target (m/s)</label>
-            <input id="tip-ut-target" readonly />
-          </div>
-          <div class="field">
-            <label>
-              Re lab
-              <span class="help" data-tooltip="Mixing Reynolds number = rho * N * D^2 / mu. Indicates flow regime.">?</span>
-              <span class="pill" id="tip-regime-lab">--</span>
-            </label>
-            <input id="tip-re-lab" readonly />
-          </div>
-          <div class="field">
-            <label>
-              N plant (1/s)
-              <span class="help" data-tooltip="Impeller rotational speed in revolutions per second (rpm/60).">?</span>
-            </label>
-            <input id="tip-n-plant" readonly />
-          </div>
-          <div class="field">
-            <label>rpm plant</label>
-            <input id="tip-rpm-plant" readonly />
-          </div>
-          <div class="field">
-            <label>Power plant (W)</label>
-            <input id="tip-p-plant" readonly />
-          </div>
-          <div class="field">
-            <label>P/V plant (W/m3)</label>
-            <input id="tip-pv-plant" readonly />
-          </div>
-          <div class="field">
-            <label>
-              Re plant
-              <span class="help" data-tooltip="Mixing Reynolds number = rho * N * D^2 / mu. Indicates flow regime.">?</span>
-              <span class="pill" id="tip-regime-plant">--</span>
-            </label>
-            <input id="tip-re-plant" readonly />
-          </div>
-          <div class="field">
-            <label>Torque plant (N*m)</label>
-            <input id="tip-torque" readonly />
-          </div>
-        </div>
-        <div class="note">
-          Use when shear or gas dispersion is tied to tip speed. Keeps U tip = pi * N * D constant.
-        </div>
+          <small>Best for jacket heat-transfer sizing and exotherm checks.</small>
+        </article>
       </section>
     </main>
 
     <footer>
-      Prototype only. Verify values and units before use in design or operations.
+      Prototype only. Validate inputs, units, and assumptions before use.
     </footer>
-
-    <script>
-      function toNumber(value) {
-        const number = Number(value);
-        return Number.isFinite(number) ? number : 0;
-      }
-
-      function regimeText(re) {
-        if (re >= 1e4) {
-          return "Turbulent (safe, Re>=10k)";
-        }
-        if (re >= 1e3) {
-          return "Transition (1e3-1e4)";
-        }
-        return "Laminar (Re<1e3) - consider larger D or rpm";
-      }
-
-      function format(value) {
-        if (!Number.isFinite(value)) {
-          return "";
-        }
-        const abs = Math.abs(value);
-        let output = "";
-        if (abs >= 1000) {
-          output = value.toFixed(2);
-        } else if (abs >= 1) {
-          output = value.toFixed(3);
-        } else {
-          output = value.toFixed(6);
-        }
-        return output.replace(/\.?0+$/, "");
-      }
-
-      function calcKeepPV() {
-        const rho = toNumber(document.getElementById("pv-rho").value) * 1000;
-        const mu = toNumber(document.getElementById("pv-mu").value);
-        const npLab = toNumber(document.getElementById("pv-np-lab").value);
-        const dLab = toNumber(document.getElementById("pv-d-lab").value) / 1000;
-        const rpmLab = toNumber(document.getElementById("pv-rpm-lab").value);
-        const vLab = toNumber(document.getElementById("pv-v-lab").value) / 1000;
-        const dPlant = toNumber(document.getElementById("pv-d-plant").value) / 1000;
-        const vPlant = toNumber(document.getElementById("pv-v-plant").value) / 1000;
-        const npPlant = toNumber(document.getElementById("pv-np-plant").value);
-
-        const nLab = rpmLab / 60;
-        const uTipLab = Math.PI * nLab * dLab;
-        const pLab = npLab * rho * Math.pow(nLab, 3) * Math.pow(dLab, 5);
-        const pvLab = vLab > 0 ? pLab / vLab : 0;
-        const reLab = mu > 0 ? (rho * nLab * Math.pow(dLab, 2)) / mu : 0;
-
-        const pPlant = pvLab * vPlant;
-        const nPlant =
-          npPlant > 0 && rho > 0 && dPlant > 0
-            ? Math.pow(pPlant / (npPlant * rho * Math.pow(dPlant, 5)), 1 / 3)
-            : 0;
-        const rpmPlant = nPlant * 60;
-        const uTipPlant = Math.PI * nPlant * dPlant;
-        const rePlant = mu > 0 ? (rho * nPlant * Math.pow(dPlant, 2)) / mu : 0;
-        const torque = nPlant > 0 ? pPlant / (2 * Math.PI * nPlant) : 0;
-        const pvPlant = vPlant > 0 ? pPlant / vPlant : 0;
-
-        document.getElementById("pv-n-lab").value = format(nLab);
-        document.getElementById("pv-ut-lab").value = format(uTipLab);
-        document.getElementById("pv-p-lab").value = format(pLab);
-        document.getElementById("pv-pv-lab").value = format(pvLab);
-        document.getElementById("pv-re-lab").value = format(reLab);
-        document.getElementById("pv-regime-lab").textContent = regimeText(reLab);
-        document.getElementById("pv-p-plant").value = format(pPlant);
-        document.getElementById("pv-n-plant").value = format(nPlant);
-        document.getElementById("pv-rpm-plant").value = format(rpmPlant);
-        document.getElementById("pv-ut-plant").value = format(uTipPlant);
-        document.getElementById("pv-re-plant").value = format(rePlant);
-        document.getElementById("pv-regime-plant").textContent = regimeText(rePlant);
-        document.getElementById("pv-torque").value = format(torque);
-        document.getElementById("pv-pv-plant").value = format(pvPlant);
-      }
-
-      function calcKeepTip() {
-        const rho = toNumber(document.getElementById("tip-rho").value) * 1000;
-        const mu = toNumber(document.getElementById("tip-mu").value);
-        const npPlant = toNumber(document.getElementById("tip-np-plant").value);
-        const dLab = toNumber(document.getElementById("tip-d-lab").value) / 1000;
-        const rpmLab = toNumber(document.getElementById("tip-rpm-lab").value);
-        const dPlant = toNumber(document.getElementById("tip-d-plant").value) / 1000;
-        const vPlant = toNumber(document.getElementById("tip-v-plant").value) / 1000;
-
-        const nLab = rpmLab / 60;
-        const uTipTarget = Math.PI * nLab * dLab;
-        const reLab = mu > 0 ? (rho * nLab * Math.pow(dLab, 2)) / mu : 0;
-
-        const nPlant = dPlant > 0 ? uTipTarget / (Math.PI * dPlant) : 0;
-        const rpmPlant = nPlant * 60;
-        const pPlant = npPlant * rho * Math.pow(nPlant, 3) * Math.pow(dPlant, 5);
-        const pvPlant = vPlant > 0 ? pPlant / vPlant : 0;
-        const rePlant = mu > 0 ? (rho * nPlant * Math.pow(dPlant, 2)) / mu : 0;
-        const torque = nPlant > 0 ? pPlant / (2 * Math.PI * nPlant) : 0;
-
-        document.getElementById("tip-n-lab").value = format(nLab);
-        document.getElementById("tip-ut-target").value = format(uTipTarget);
-        document.getElementById("tip-re-lab").value = format(reLab);
-        document.getElementById("tip-regime-lab").textContent = regimeText(reLab);
-        document.getElementById("tip-n-plant").value = format(nPlant);
-        document.getElementById("tip-rpm-plant").value = format(rpmPlant);
-        document.getElementById("tip-p-plant").value = format(pPlant);
-        document.getElementById("tip-pv-plant").value = format(pvPlant);
-        document.getElementById("tip-re-plant").value = format(rePlant);
-        document.getElementById("tip-regime-plant").textContent = regimeText(rePlant);
-        document.getElementById("tip-torque").value = format(torque);
-      }
-
-      function wire() {
-        const inputs = document.querySelectorAll("input:not([readonly])");
-        inputs.forEach((input) => {
-          input.addEventListener("input", () => {
-            calcKeepPV();
-            calcKeepTip();
-          });
-        });
-        calcKeepPV();
-        calcKeepTip();
-      }
-
-      window.addEventListener("DOMContentLoaded", wire);
-    </script>
   </body>
 </html>

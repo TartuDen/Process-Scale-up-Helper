@@ -1,0 +1,684 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Heating Scale-Up (UA)</title>
+    <style>
+      :root {
+        --ink: #1a1a1a;
+        --ink-muted: #4a4a4a;
+        --paper: #f6f3ee;
+        --accent: #c06b3e;
+        --accent-2: #2e6a8a;
+        --panel: #fffaf3;
+        --panel-2: #f0f6f8;
+        --shadow: rgba(0, 0, 0, 0.12);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        color: var(--ink);
+        background:
+          radial-gradient(1200px 800px at 10% 10%, #f9efe3 0%, transparent 60%),
+          radial-gradient(900px 700px at 90% 20%, #e8f1f6 0%, transparent 55%),
+          linear-gradient(160deg, #f7f1e8 0%, #f1efe7 45%, #eef2f1 100%);
+        font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande", sans-serif;
+      }
+
+      header {
+        padding: 36px 18px 20px;
+        text-align: center;
+      }
+
+      header h1 {
+        margin: 0;
+        font-family: "Georgia", "Palatino Linotype", "Book Antiqua", serif;
+        font-size: clamp(28px, 3.5vw, 44px);
+        letter-spacing: 0.5px;
+      }
+
+      header p {
+        margin: 10px auto 0;
+        max-width: 760px;
+        color: var(--ink-muted);
+        font-size: clamp(14px, 1.6vw, 18px);
+      }
+
+      main {
+        max-width: 1100px;
+        margin: 0 auto 56px;
+        padding: 0 18px;
+        display: grid;
+        gap: 22px;
+      }
+
+      .panel {
+        background: var(--panel);
+        border-radius: 18px;
+        box-shadow: 0 14px 30px var(--shadow);
+        padding: 20px;
+        animation: rise 0.8s ease both;
+      }
+
+      .panel:nth-of-type(2) {
+        background: var(--panel-2);
+        animation-delay: 0.08s;
+      }
+
+      .panel:nth-of-type(3) {
+        animation-delay: 0.16s;
+      }
+
+      .panel h2 {
+        margin: 0 0 12px;
+        font-size: 20px;
+        letter-spacing: 0.2px;
+      }
+
+      .grid {
+        display: grid;
+        gap: 14px;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      }
+
+      .field {
+        display: grid;
+        gap: 6px;
+      }
+
+      label {
+        font-size: 13px;
+        color: var(--ink-muted);
+        min-height: 32px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex-wrap: wrap;
+      }
+
+      .help {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 16px;
+        height: 16px;
+        margin-left: 6px;
+        border-radius: 50%;
+        border: 1px solid rgba(26, 26, 26, 0.25);
+        font-size: 11px;
+        color: var(--ink-muted);
+        position: relative;
+        cursor: help;
+      }
+
+      .help::after {
+        content: attr(data-tooltip);
+        position: absolute;
+        left: 50%;
+        bottom: 140%;
+        transform: translateX(-50%);
+        background: #1f2a2f;
+        color: #f7f5f0;
+        padding: 8px 10px;
+        border-radius: 8px;
+        font-size: 12px;
+        line-height: 1.3;
+        min-width: 180px;
+        max-width: 240px;
+        text-align: left;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.2s ease;
+      }
+
+      .help::before {
+        content: "";
+        position: absolute;
+        left: 50%;
+        bottom: 120%;
+        transform: translateX(-50%);
+        border-width: 6px;
+        border-style: solid;
+        border-color: #1f2a2f transparent transparent transparent;
+        opacity: 0;
+        transition: opacity 0.2s ease;
+      }
+
+      .help:hover::after,
+      .help:hover::before {
+        opacity: 1;
+      }
+
+      input {
+        border: 1px solid #d4cfc6;
+        border-radius: 10px;
+        padding: 10px 12px;
+        font-size: 15px;
+        background: #fff;
+        color: var(--ink);
+      }
+
+      input:focus {
+        outline: 2px solid rgba(192, 107, 62, 0.35);
+        border-color: var(--accent);
+      }
+
+      .results {
+        margin-top: 14px;
+        padding-top: 14px;
+        border-top: 1px dashed rgba(0, 0, 0, 0.2);
+      }
+
+      .pill {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 999px;
+        background: rgba(46, 106, 138, 0.12);
+        color: var(--accent-2);
+        font-size: 12px;
+        margin-top: 4px;
+      }
+
+      .status {
+        background: rgba(192, 107, 62, 0.15);
+        color: #8a3c1a;
+      }
+
+      .status.ok {
+        background: rgba(46, 138, 90, 0.15);
+        color: #246347;
+      }
+
+      .note {
+        font-size: 12px;
+        color: var(--ink-muted);
+        margin-top: 6px;
+      }
+
+      footer {
+        text-align: center;
+        padding: 0 18px 24px;
+        color: var(--ink-muted);
+        font-size: 12px;
+      }
+
+      @keyframes rise {
+        from {
+          opacity: 0;
+          transform: translateY(18px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Heating Scale-Up (UA)</h1>
+      <p>
+        Estimate UA using dynamic response or LMTD, then check if planned cooling
+        can handle reaction heat.
+      </p>
+      <p><a href="index.html">Back to home</a></p>
+    </header>
+
+    <main>
+      <section class="panel" id="method-a">
+        <h2>Method A: Time Constant (tau-fit)</h2>
+        <div class="grid">
+          <div class="field">
+            <label for="a-m">
+              Liquid mass m (kg)
+              <span class="help" data-tooltip="Vessel-side liquid mass to be cooled/heated.">?</span>
+            </label>
+            <input id="a-m" type="number" step="any" placeholder="e.g. 120" />
+          </div>
+          <div class="field">
+            <label for="a-cp">
+              Liquid heat capacity Cp (kJ/kg/K)
+              <span class="help" data-tooltip="Heat capacity of the vessel liquid.">?</span>
+            </label>
+            <input id="a-cp" type="number" step="any" placeholder="e.g. 4.2" />
+          </div>
+          <div class="field">
+            <label for="a-mh">
+              Hardware mass m_h (kg)
+              <span class="help" data-tooltip="Optional metal or internal mass included in the thermal response.">?</span>
+            </label>
+            <input id="a-mh" type="number" step="any" placeholder="e.g. 40" />
+          </div>
+          <div class="field">
+            <label for="a-cph">
+              Hardware heat capacity Cp_h (kJ/kg/K)
+              <span class="help" data-tooltip="Heat capacity of the included hardware mass.">?</span>
+            </label>
+            <input id="a-cph" type="number" step="any" placeholder="e.g. 0.5" />
+          </div>
+          <div class="field">
+            <label for="a-tau">
+              Time constant tau (s)
+              <span class="help" data-tooltip="Fit from Tv(t)=Tj+(Tv0-Tj)*exp(-t/tau).">?</span>
+            </label>
+            <input id="a-tau" type="number" step="any" placeholder="e.g. 800" />
+          </div>
+        </div>
+        <div class="results grid">
+          <div class="field">
+            <label>
+              Effective mCp (kJ/K)
+              <span class="help" data-tooltip="Combined heat capacity of liquid and hardware.">?</span>
+            </label>
+            <input id="a-mcp" readonly />
+          </div>
+          <div class="field">
+            <label>
+              UA (W/K)
+              <span class="help" data-tooltip="Overall heat-transfer capacity from tau-fit.">?</span>
+            </label>
+            <input id="a-ua-w" readonly />
+          </div>
+          <div class="field">
+            <label>
+              UA (kW/K)
+              <span class="help" data-tooltip="UA in kW/K for convenience.">?</span>
+            </label>
+            <input id="a-ua-kw" readonly />
+          </div>
+        </div>
+        <div class="note">
+          Use when you can fit a first-order response time constant from a cooling or heating step.
+        </div>
+      </section>
+
+      <section class="panel" id="method-b">
+        <h2>Method B: LMTD (Jacket Energy Balance)</h2>
+        <div class="grid">
+          <div class="field">
+            <label for="b-mdot">
+              Jacket mass flow m_dot (kg/s)
+              <span class="help" data-tooltip="Direct mass flow input (overrides volumetric flow).">?</span>
+            </label>
+            <input id="b-mdot" type="number" step="any" placeholder="e.g. 0.6" />
+          </div>
+          <div class="field">
+            <label for="b-vdot">
+              Jacket volumetric flow (L/min)
+              <span class="help" data-tooltip="Used with density to estimate mass flow.">?</span>
+            </label>
+            <input id="b-vdot" type="number" step="any" placeholder="e.g. 30" />
+          </div>
+          <div class="field">
+            <label for="b-rho">
+              Jacket density rho (kg/L)
+              <span class="help" data-tooltip="Density for volumetric-to-mass flow conversion.">?</span>
+            </label>
+            <input id="b-rho" type="number" step="any" placeholder="e.g. 1" />
+          </div>
+          <div class="field">
+            <label for="b-cp">
+              Jacket heat capacity Cp_j (kJ/kg/K)
+              <span class="help" data-tooltip="Heat capacity of the jacket fluid.">?</span>
+            </label>
+            <input id="b-cp" type="number" step="any" placeholder="e.g. 4.2" />
+          </div>
+          <div class="field">
+            <label for="b-tji">
+              Jacket inlet T_j,i (C)
+              <span class="help" data-tooltip="Jacket inlet temperature (cooling mode assumes Tv > Tj).">?</span>
+            </label>
+            <input id="b-tji" type="number" step="any" placeholder="e.g. 20" />
+          </div>
+          <div class="field">
+            <label for="b-tjo">
+              Jacket outlet T_j,o (C)
+              <span class="help" data-tooltip="Jacket outlet temperature at steady conditions.">?</span>
+            </label>
+            <input id="b-tjo" type="number" step="any" placeholder="e.g. 30" />
+          </div>
+          <div class="field">
+            <label for="b-tv">
+              Vessel bulk T_v (C)
+              <span class="help" data-tooltip="Bulk liquid temperature in the vessel.">?</span>
+            </label>
+            <input id="b-tv" type="number" step="any" placeholder="e.g. 60" />
+          </div>
+        </div>
+        <div class="results grid">
+          <div class="field">
+            <label>
+              Mass flow used (kg/s)
+              <span class="help" data-tooltip="Mass flow selected from inputs for calculations.">?</span>
+            </label>
+            <input id="b-mdot-used" readonly />
+          </div>
+          <div class="field">
+            <label>
+              Heat duty Q (W)
+              <span class="help" data-tooltip="Jacket heat duty from flow and temperature rise.">?</span>
+            </label>
+            <input id="b-q" readonly />
+          </div>
+          <div class="field">
+            <label>
+              LMTD (K)
+              <span class="help" data-tooltip="Log-mean temperature difference for cooling mode.">?</span>
+            </label>
+            <input id="b-lmtd" readonly />
+          </div>
+          <div class="field">
+            <label>
+              UA (W/K)
+              <span class="help" data-tooltip="Overall heat-transfer capacity from LMTD method.">?</span>
+            </label>
+            <input id="b-ua-w" readonly />
+          </div>
+          <div class="field">
+            <label>
+              UA (kW/K)
+              <span class="help" data-tooltip="UA in kW/K for convenience.">?</span>
+            </label>
+            <input id="b-ua-kw" readonly />
+          </div>
+        </div>
+        <div class="note">
+          Use when steady jacket inlet/outlet temperatures are known. Cooling mode assumes Tv > Tj.
+        </div>
+      </section>
+
+      <section class="panel" id="exotherm">
+        <h2>Exotherm Check</h2>
+        <div class="grid">
+          <div class="field">
+            <label>
+              UA from Method A (kW/K)
+              <span class="help" data-tooltip="UA from time-constant method, if valid.">?</span>
+            </label>
+            <input id="e-ua-a" readonly />
+          </div>
+          <div class="field">
+            <label>
+              UA from Method B (kW/K)
+              <span class="help" data-tooltip="UA from LMTD method, if valid.">?</span>
+            </label>
+            <input id="e-ua-b" readonly />
+          </div>
+          <div class="field">
+            <label>
+              UA working (kW/K)
+              <span class="help" data-tooltip="Conservative UA (min of A and B when both exist).">?</span>
+            </label>
+            <input id="e-ua-work" readonly />
+          </div>
+        </div>
+        <div class="grid" style="margin-top: 10px;">
+          <div class="field">
+            <label for="e-dh">
+              |Delta H_rxn| (kJ/mol)
+              <span class="help" data-tooltip="Absolute reaction enthalpy per mol. Use calorimetry or trusted literature sources.">?</span>
+            </label>
+            <input id="e-dh" type="number" step="any" placeholder="e.g. 75" />
+          </div>
+          <div class="field">
+            <label for="e-ndot">
+              Molar rate n_dot (mol/h)
+              <span class="help" data-tooltip="Planned feed or reaction molar rate.">?</span>
+            </label>
+            <input id="e-ndot" type="number" step="any" placeholder="e.g. 500" />
+          </div>
+          <div class="field">
+            <label for="e-sf">
+              Safety factor (SF)
+              <span class="help" data-tooltip="Factor applied to reaction heat to add margin.">?</span>
+            </label>
+            <input id="e-sf" type="number" step="any" placeholder="e.g. 1.5" />
+          </div>
+          <div class="field">
+            <label for="e-tv">
+              Planned vessel T_v (C)
+              <span class="help" data-tooltip="Target bulk temperature during reaction.">?</span>
+            </label>
+            <input id="e-tv" type="number" step="any" placeholder="e.g. 60" />
+          </div>
+          <div class="field">
+            <label for="e-tji">
+              Planned jacket inlet T_j,i (C)
+              <span class="help" data-tooltip="Planned jacket inlet temperature.">?</span>
+            </label>
+            <input id="e-tji" type="number" step="any" placeholder="e.g. 20" />
+          </div>
+          <div class="field">
+            <label for="e-mdot">
+              Planned jacket flow m_dot (kg/s)
+              <span class="help" data-tooltip="Optional. If blank, assumes high-flow limit.">?</span>
+            </label>
+            <input id="e-mdot" type="number" step="any" placeholder="optional" />
+          </div>
+          <div class="field">
+            <label for="e-cp">
+              Jacket heat capacity Cp_j (kJ/kg/K)
+              <span class="help" data-tooltip="Heat capacity of the jacket fluid used in the plan.">?</span>
+            </label>
+            <input id="e-cp" type="number" step="any" placeholder="e.g. 4.2" />
+          </div>
+        </div>
+        <div class="results grid">
+          <div class="field">
+            <label>
+              Q_rxn (kW)
+              <span class="help" data-tooltip="Reaction heat rate without safety factor.">?</span>
+            </label>
+            <input id="e-qrxn" readonly />
+          </div>
+          <div class="field">
+            <label>
+              Q_req (kW)
+              <span class="help" data-tooltip="Required removal with safety factor.">?</span>
+            </label>
+            <input id="e-qreq" readonly />
+          </div>
+          <div class="field">
+            <label>
+              Planned jacket outlet T_j,o (C)
+              <span class="help" data-tooltip="Estimated outlet temperature from required duty.">?</span>
+            </label>
+            <input id="e-tjo" readonly />
+          </div>
+          <div class="field">
+            <label>
+              LMTD plan (K)
+              <span class="help" data-tooltip="Log-mean temperature difference at planned conditions.">?</span>
+            </label>
+            <input id="e-lmtd" readonly />
+          </div>
+          <div class="field">
+            <label>
+              Q_removed plan (kW)
+              <span class="help" data-tooltip="Cooling capacity at planned conditions.">?</span>
+            </label>
+            <input id="e-qremoved" readonly />
+          </div>
+          <div class="field">
+            <label>
+              Max safe n_dot (mol/h)
+              <span class="help" data-tooltip="Maximum molar rate that matches cooling capacity.">?</span>
+            </label>
+            <input id="e-ndot-max" readonly />
+          </div>
+          <div class="field">
+            <label>
+              Status
+              <span class="help" data-tooltip="OK if Q_removed >= Q_req, otherwise Risk.">?</span>
+            </label>
+            <span class="pill status" id="e-status">Enter inputs</span>
+          </div>
+        </div>
+        <div class="note">
+          UA working uses the minimum of Method A and B when both are valid.
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      Prototype only. Validate inputs, units, and assumptions before use.
+    </footer>
+
+    <script>
+      let uaA = NaN;
+      let uaB = NaN;
+
+      function toNumber(value) {
+        const number = Number(value);
+        return Number.isFinite(number) ? number : NaN;
+      }
+
+      function format(value) {
+        if (!Number.isFinite(value)) {
+          return "";
+        }
+        const abs = Math.abs(value);
+        let output = "";
+        if (abs >= 1000) {
+          output = value.toFixed(2);
+        } else if (abs >= 1) {
+          output = value.toFixed(3);
+        } else {
+          output = value.toFixed(6);
+        }
+        return output.replace(/\.?0+$/, "");
+      }
+
+      function lmtD(deltaHi, deltaHo) {
+        if (!(deltaHi > 0) || !(deltaHo > 0)) {
+          return NaN;
+        }
+        const diff = Math.abs(deltaHi - deltaHo);
+        if (diff < 1e-6) {
+          return deltaHi;
+        }
+        return (deltaHi - deltaHo) / Math.log(deltaHi / deltaHo);
+      }
+
+      function calcMethodA() {
+        const m = toNumber(document.getElementById("a-m").value);
+        const cp = toNumber(document.getElementById("a-cp").value);
+        const mh = toNumber(document.getElementById("a-mh").value);
+        const cph = toNumber(document.getElementById("a-cph").value);
+        const tau = toNumber(document.getElementById("a-tau").value);
+
+        const mcpEff = (m > 0 && cp > 0 ? m * cp : 0) + (mh > 0 && cph > 0 ? mh * cph : 0);
+        const uaW = tau > 0 ? (mcpEff * 1000) / tau : NaN;
+        const uaKw = Number.isFinite(uaW) ? uaW / 1000 : NaN;
+
+        uaA = uaKw;
+
+        document.getElementById("a-mcp").value = format(mcpEff);
+        document.getElementById("a-ua-w").value = format(uaW);
+        document.getElementById("a-ua-kw").value = format(uaKw);
+      }
+
+      function calcMethodB() {
+        const mdotInput = toNumber(document.getElementById("b-mdot").value);
+        const vdot = toNumber(document.getElementById("b-vdot").value);
+        const rho = toNumber(document.getElementById("b-rho").value);
+        const cp = toNumber(document.getElementById("b-cp").value);
+        const tji = toNumber(document.getElementById("b-tji").value);
+        const tjo = toNumber(document.getElementById("b-tjo").value);
+        const tv = toNumber(document.getElementById("b-tv").value);
+
+        let mdot = mdotInput;
+        if (!(mdot > 0) && vdot > 0 && rho > 0) {
+          mdot = (vdot * rho) / 60;
+        }
+
+        const q = mdot > 0 && cp > 0 ? mdot * cp * 1000 * (tjo - tji) : NaN;
+        const deltaHi = tv - tji;
+        const deltaHo = tv - tjo;
+        const lmtd = lmtD(deltaHi, deltaHo);
+        const uaW = Number.isFinite(q) && Number.isFinite(lmtd) ? q / lmtd : NaN;
+        const uaKw = Number.isFinite(uaW) ? uaW / 1000 : NaN;
+
+        uaB = uaKw;
+
+        document.getElementById("b-mdot-used").value = format(mdot);
+        document.getElementById("b-q").value = format(q);
+        document.getElementById("b-lmtd").value = format(lmtd);
+        document.getElementById("b-ua-w").value = format(uaW);
+        document.getElementById("b-ua-kw").value = format(uaKw);
+      }
+
+      function calcExotherm() {
+        const dh = Math.abs(toNumber(document.getElementById("e-dh").value));
+        const ndot = toNumber(document.getElementById("e-ndot").value);
+        const sf = toNumber(document.getElementById("e-sf").value);
+        const tv = toNumber(document.getElementById("e-tv").value);
+        const tji = toNumber(document.getElementById("e-tji").value);
+        const mdot = toNumber(document.getElementById("e-mdot").value);
+        const cp = toNumber(document.getElementById("e-cp").value);
+
+        const uaWork =
+          uaA > 0 && uaB > 0 ? Math.min(uaA, uaB) : uaA > 0 ? uaA : uaB > 0 ? uaB : NaN;
+
+        const qRxn = dh > 0 && ndot > 0 ? (dh * ndot) / 3600 : NaN;
+        const qReq = Number.isFinite(qRxn) && sf > 0 ? qRxn * sf : NaN;
+
+        let tjo = tji;
+        if (mdot > 0 && cp > 0 && Number.isFinite(qReq)) {
+          tjo = tji + qReq / (mdot * cp);
+        }
+
+        const deltaHi = tv - tji;
+        const deltaHo = tv - tjo;
+        const lmtd = lmtD(deltaHi, deltaHo);
+        const qRemoved = uaWork > 0 && Number.isFinite(lmtd) ? uaWork * lmtd : NaN;
+        const ndotMax =
+          qRemoved > 0 && dh > 0 && sf > 0 ? (qRemoved * 3600) / (dh * sf) : NaN;
+
+        document.getElementById("e-ua-a").value = format(uaA);
+        document.getElementById("e-ua-b").value = format(uaB);
+        document.getElementById("e-ua-work").value = format(uaWork);
+        document.getElementById("e-qrxn").value = format(qRxn);
+        document.getElementById("e-qreq").value = format(qReq);
+        document.getElementById("e-tjo").value = format(tjo);
+        document.getElementById("e-lmtd").value = format(lmtd);
+        document.getElementById("e-qremoved").value = format(qRemoved);
+        document.getElementById("e-ndot-max").value = format(ndotMax);
+
+        const statusEl = document.getElementById("e-status");
+        statusEl.classList.remove("ok");
+        if (Number.isFinite(qRemoved) && Number.isFinite(qReq)) {
+          if (qRemoved >= qReq) {
+            statusEl.textContent = "OK";
+            statusEl.classList.add("ok");
+          } else {
+            statusEl.textContent = "Risk";
+          }
+        } else {
+          statusEl.textContent = "Enter inputs";
+        }
+      }
+
+      function recalc() {
+        calcMethodA();
+        calcMethodB();
+        calcExotherm();
+      }
+
+      function wire() {
+        const inputs = document.querySelectorAll("input:not([readonly])");
+        inputs.forEach((input) => {
+          input.addEventListener("input", recalc);
+        });
+        recalc();
+      }
+
+      window.addEventListener("DOMContentLoaded", wire);
+    </script>
+  </body>
+</html>

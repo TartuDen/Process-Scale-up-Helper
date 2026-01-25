@@ -11,11 +11,11 @@ This is a prototype. Validate inputs, units, and results before design or operat
 
 ## How to use
 1. Open `index.html` in a browser.
-2. Choose a scale-up rule:
-   - Keep P/V constant: preserves power per unit volume from lab to plant.
-   - Keep tip speed constant: preserves shear/tip-speed effects.
-3. Enter your lab and plant inputs (units are shown on each field).
-4. Review calculated outputs, including Reynolds regime.
+2. Pick a calculator:
+   - Stirring scale-up (`mixing.html`)
+   - Heating scale-up / UA (`heating.html`)
+3. Enter your inputs (units are shown on each field).
+4. Review calculated outputs and regime checks.
 5. For impeller guidance, open `np-guide.html`.
 
 ## Units used
@@ -28,7 +28,8 @@ This is a prototype. Validate inputs, units, and results before design or operat
 - Speed: rpm (inputs), 1/s (outputs)
 
 ## Files
-- `index.html`: Mixing scale-up calculators.
+- `index.html`: Landing page with tool links.
+- `mixing.html`: Mixing scale-up calculators.
+- `heating.html`: UA and exotherm check calculator.
 - `np-guide.html`: Impeller type and Np guidance.
 - `imgs/`: Impeller reference images.
-
