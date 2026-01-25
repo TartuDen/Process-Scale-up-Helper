@@ -80,11 +80,17 @@
         display: grid;
         gap: 14px;
         grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        align-items: start;
       }
 
       .field {
         display: grid;
         gap: 6px;
+      }
+
+      .field.with-hint {
+        position: relative;
+        padding-bottom: 28px;
       }
 
       label {
@@ -157,6 +163,7 @@
         font-size: 15px;
         background: #fff;
         color: var(--ink);
+        height: 42px;
       }
 
       input:focus {
@@ -178,6 +185,16 @@
         color: var(--accent-2);
         font-size: 12px;
         margin-top: 4px;
+      }
+
+      .hint {
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        font-size: 12px;
+        color: var(--ink-muted);
+        max-width: 100%;
+        line-height: 1.2;
       }
 
       .note {
@@ -232,12 +249,13 @@
             <label for="pv-rho">Density rho (g/mL)</label>
             <input id="pv-rho" type="number" step="any" placeholder="e.g. 1 for water" />
           </div>
-          <div class="field">
+          <div class="field with-hint">
             <label for="pv-mu">
               Viscosity mu (Pa*s)
-              <span class="help" data-tooltip="Dynamic viscosity of the fluid. Use Pa*s (1 mPa*s = 0.001 Pa*s).">?</span>
+              <span class="help" data-tooltip="Dynamic viscosity of the fluid. Use Pa*s (1 mPa*s = 0.001 Pa*s). You can type a value or a fluid name.">?</span>
             </label>
-            <input id="pv-mu" type="number" step="any" placeholder="e.g. 0.001 for water" />
+            <input id="pv-mu" type="text" list="viscosity-list" placeholder="e.g. 0.001 for water or Acetone" />
+            <div class="hint" id="pv-mu-hint"></div>
           </div>
           <div class="field">
             <label for="pv-np-lab">
@@ -369,12 +387,13 @@
             </label>
             <input id="tip-rho" type="number" step="any" placeholder="e.g. 1 for water" />
           </div>
-          <div class="field">
+          <div class="field with-hint">
             <label for="tip-mu">
               Viscosity mu (Pa*s)
-              <span class="help" data-tooltip="Dynamic viscosity of the fluid. Use Pa*s (1 mPa*s = 0.001 Pa*s).">?</span>
+              <span class="help" data-tooltip="Dynamic viscosity of the fluid. Use Pa*s (1 mPa*s = 0.001 Pa*s). You can type a value or a fluid name.">?</span>
             </label>
-            <input id="tip-mu" type="number" step="any" placeholder="e.g. 0.001 for water" />
+            <input id="tip-mu" type="text" list="viscosity-list" placeholder="e.g. 0.001 for water or Acetone" />
+            <div class="hint" id="tip-mu-hint"></div>
           </div>
           <div class="field">
             <label for="tip-np-plant">
@@ -474,10 +493,106 @@
       Prototype only. Verify values and units before use in design or operations.
     </footer>
 
+    <datalist id="viscosity-list">
+      <option value="Acetic acid"></option>
+      <option value="Acetone"></option>
+      <option value="Alcohol, ethyl (ethanol)"></option>
+      <option value="Alcohol, methyl (methanol)"></option>
+      <option value="Alcohol, propyl"></option>
+      <option value="Benzene"></option>
+      <option value="Bromine"></option>
+      <option value="Carbon Disulfide"></option>
+      <option value="Carbon Tetrachloride"></option>
+      <option value="Castor Oil"></option>
+      <option value="Chloroform"></option>
+      <option value="Decane"></option>
+      <option value="Dodecane"></option>
+      <option value="Ether"></option>
+      <option value="Ethylene Glycol"></option>
+      <option value="Trichlorofluoromethane refrigerant R-11"></option>
+      <option value="Glycerine"></option>
+      <option value="Heptane"></option>
+      <option value="Hexane"></option>
+      <option value="Kerosene"></option>
+      <option value="Linseed Oil"></option>
+      <option value="Octane"></option>
+      <option value="Phenol"></option>
+      <option value="Propane"></option>
+      <option value="Propylene"></option>
+      <option value="Propylene glycol"></option>
+      <option value="Toluene"></option>
+      <option value="Turpentine"></option>
+      <option value="Water, Fresh"></option>
+    </datalist>
+
     <script>
       function toNumber(value) {
         const number = Number(value);
         return Number.isFinite(number) ? number : 0;
+      }
+
+      const viscosityMap = new Map([
+        ["acetic acid", 0.001155],
+        ["acetone", 0.000316],
+        ["alcohol, ethyl (ethanol)", 0.001095],
+        ["alcohol, methyl (methanol)", 0.00056],
+        ["alcohol, propyl", 0.00192],
+        ["benzene", 0.000601],
+        ["bromine", 0.00095],
+        ["carbon disulfide", 0.00036],
+        ["carbon tetrachloride", 0.00091],
+        ["castor oil", 0.65],
+        ["chloroform", 0.00053],
+        ["decane", 0.000859],
+        ["dodecane", 0.00134],
+        ["ether", 0.000223],
+        ["ethylene glycol", 0.0162],
+        ["trichlorofluoromethane refrigerant r-11", 0.00042],
+        ["glycerine", 0.95],
+        ["heptane", 0.000376],
+        ["hexane", 0.000297],
+        ["kerosene", 0.00164],
+        ["linseed oil", 0.0331],
+        ["octane", 0.00051],
+        ["phenol", 0.008],
+        ["propane", 0.00011],
+        ["propylene", 0.00009],
+        ["propylene glycol", 0.042],
+        ["toluene", 0.00055],
+        ["turpentine", 0.001375],
+        ["water, fresh", 0.00089],
+      ]);
+
+      function normalizeName(value) {
+        return String(value || "").toLowerCase().replace(/\s+/g, " ").trim();
+      }
+
+      function parseMu(value) {
+        const trimmed = String(value || "").trim();
+        if (!trimmed) {
+          return 0;
+        }
+        const numeric = Number(trimmed);
+        if (Number.isFinite(numeric)) {
+          return numeric;
+        }
+        const key = normalizeName(trimmed);
+        if (viscosityMap.has(key)) {
+          return viscosityMap.get(key);
+        }
+        return 0;
+      }
+
+      function updateMuHint(inputId, hintId) {
+        const raw = document.getElementById(inputId).value;
+        const key = normalizeName(raw);
+        const hint = document.getElementById(hintId);
+        if (viscosityMap.has(key)) {
+          const mu = viscosityMap.get(key);
+          hint.textContent = `Selected: ${raw} (${format(mu)} Pa*s)`;
+        } else {
+          hint.textContent = "";
+        }
       }
 
       function regimeText(re) {
@@ -508,7 +623,7 @@
 
       function calcKeepPV() {
         const rho = toNumber(document.getElementById("pv-rho").value) * 1000;
-        const mu = toNumber(document.getElementById("pv-mu").value);
+        const mu = parseMu(document.getElementById("pv-mu").value);
         const npLab = toNumber(document.getElementById("pv-np-lab").value);
         const dLab = toNumber(document.getElementById("pv-d-lab").value) / 1000;
         const rpmLab = toNumber(document.getElementById("pv-rpm-lab").value);
@@ -552,7 +667,7 @@
 
       function calcKeepTip() {
         const rho = toNumber(document.getElementById("tip-rho").value) * 1000;
-        const mu = toNumber(document.getElementById("tip-mu").value);
+        const mu = parseMu(document.getElementById("tip-mu").value);
         const npPlant = toNumber(document.getElementById("tip-np-plant").value);
         const dLab = toNumber(document.getElementById("tip-d-lab").value) / 1000;
         const rpmLab = toNumber(document.getElementById("tip-rpm-lab").value);
@@ -587,10 +702,14 @@
         const inputs = document.querySelectorAll("input:not([readonly])");
         inputs.forEach((input) => {
           input.addEventListener("input", () => {
+            updateMuHint("pv-mu", "pv-mu-hint");
+            updateMuHint("tip-mu", "tip-mu-hint");
             calcKeepPV();
             calcKeepTip();
           });
         });
+        updateMuHint("pv-mu", "pv-mu-hint");
+        updateMuHint("tip-mu", "tip-mu-hint");
         calcKeepPV();
         calcKeepTip();
       }
