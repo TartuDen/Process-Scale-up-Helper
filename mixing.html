@@ -103,6 +103,14 @@
         flex-wrap: wrap;
       }
 
+      label.inline {
+        flex-wrap: nowrap;
+      }
+
+      label.inline .pill {
+        margin-top: 0;
+      }
+
       .help {
         display: inline-flex;
         align-items: center;
@@ -328,7 +336,7 @@
             <input id="pv-pv-lab" readonly />
           </div>
           <div class="field">
-            <label>
+            <label class="inline">
               Re lab
               <span class="help" data-tooltip="Mixing Reynolds number = rho * N * D^2 / mu. Indicates flow regime.">?</span>
               <span class="pill" id="pv-regime-lab">--</span>
@@ -355,7 +363,7 @@
             <input id="pv-ut-plant" readonly />
           </div>
           <div class="field">
-            <label>
+            <label class="inline">
               Re plant
               <span class="help" data-tooltip="Mixing Reynolds number = rho * N * D^2 / mu. Indicates flow regime.">?</span>
               <span class="pill" id="pv-regime-plant">--</span>
@@ -444,7 +452,7 @@
             <input id="tip-ut-target" readonly />
           </div>
           <div class="field">
-            <label>
+            <label class="inline">
               Re lab
               <span class="help" data-tooltip="Mixing Reynolds number = rho * N * D^2 / mu. Indicates flow regime.">?</span>
               <span class="pill" id="tip-regime-lab">--</span>
@@ -471,7 +479,7 @@
             <input id="tip-pv-plant" readonly />
           </div>
           <div class="field">
-            <label>
+            <label class="inline">
               Re plant
               <span class="help" data-tooltip="Mixing Reynolds number = rho * N * D^2 / mu. Indicates flow regime.">?</span>
               <span class="pill" id="tip-regime-plant">--</span>
