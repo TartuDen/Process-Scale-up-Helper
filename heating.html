@@ -885,13 +885,14 @@
         markNeeded("e-cp", !(eCp > 0));
       }
 
-      function initDatalistFilter(inputId, listId) {
+      function initDatalistFilter(inputId, listId, opts = {}) {
         const input = document.getElementById(inputId);
         const list = document.getElementById(listId);
         if (!input || !list) {
           return;
         }
-        const options = Array.from(list.options).map((option) => option.value);
+        const optionValues = Array.from(list.options).map((option) => option.value);
+        const minChars = Number.isFinite(opts.minChars) ? opts.minChars : 2;
 
         function render(filtered) {
           list.innerHTML = "";
@@ -902,20 +903,25 @@
           });
         }
 
-        render([]);
+        render(minChars === 0 ? optionValues : []);
         input.addEventListener("input", () => {
           const query = input.value.trim().toLowerCase();
-          if (query.length < 2) {
-            render([]);
+          if (query.length < minChars) {
+            render(minChars === 0 ? optionValues : []);
             return;
           }
-          const filtered = options.filter((value) => value.toLowerCase().includes(query));
+          const filtered = optionValues.filter((value) => value.toLowerCase().includes(query));
           render(filtered);
+        });
+        input.addEventListener("focus", () => {
+          if (minChars === 0) {
+            render(optionValues);
+          }
         });
         input.addEventListener("blur", () => {
           const query = input.value.trim().toLowerCase();
-          if (query.length < 2) {
-            render([]);
+          if (query.length < minChars) {
+            render(minChars === 0 ? optionValues : []);
           }
         });
       }
@@ -1044,8 +1050,8 @@
           clearButton.addEventListener("click", clearInputs);
         }
         initDatalistFilter("a-cp", "solvent-cp-list");
-        initDatalistFilter("b-cp", "jacket-cp-list");
-        initDatalistFilter("e-cp", "jacket-cp-list");
+        initDatalistFilter("b-cp", "jacket-cp-list", { minChars: 0 });
+        initDatalistFilter("e-cp", "jacket-cp-list", { minChars: 0 });
         recalc();
       }
 
