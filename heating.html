@@ -81,6 +81,37 @@
         letter-spacing: 0.2px;
       }
 
+      details.panel summary {
+        list-style: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      details.panel summary::-webkit-details-marker {
+        display: none;
+      }
+
+      details.panel summary h2 {
+        margin: 0;
+      }
+
+      details.panel summary::after {
+        content: "+";
+        margin-left: auto;
+        font-weight: 600;
+        color: var(--accent-2);
+      }
+
+      details.panel[open] summary {
+        margin-bottom: 12px;
+      }
+
+      details.panel[open] summary::after {
+        content: "-";
+      }
+
       .grid {
         display: grid;
         gap: 14px;
@@ -209,6 +240,23 @@
         margin-top: 6px;
       }
 
+      .action-row {
+        margin-top: 10px;
+      }
+
+      .ghost-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 8px 14px;
+        border-radius: 999px;
+        border: 1px solid rgba(46, 106, 138, 0.4);
+        color: var(--accent-2);
+        background: transparent;
+        font-size: 13px;
+        cursor: pointer;
+      }
+
       .hint {
         position: absolute;
         left: 0;
@@ -246,6 +294,9 @@
         can handle reaction heat.
       </p>
       <p><a href="index.html">Back to home</a></p>
+      <div class="action-row">
+        <button class="ghost-button" type="button" id="clear-values">Clear values</button>
+      </div>
     </header>
 
     <main>
@@ -317,8 +368,8 @@
         </div>
       </section>
 
-      <section class="panel" id="method-b">
-        <h2>Method B: LMTD (Jacket Energy Balance)</h2>
+      <details class="panel" id="method-b">
+        <summary><h2>Method B: LMTD (Jacket Energy Balance)</h2></summary>
         <div class="grid">
           <div class="field">
             <label for="b-mdot">
@@ -411,7 +462,7 @@
         <div class="note">
           Use when steady jacket inlet/outlet temperatures are known. Cooling mode assumes Tv > Tj.
         </div>
-      </section>
+      </details>
 
       <section class="panel" id="exotherm">
         <h2>Exotherm Check</h2>
@@ -552,104 +603,50 @@
     </footer>
 
     <datalist id="solvent-cp-list">
-      <option value="Ammonia, 238 oF"></option>
-      <option value="Ammonia, 211 oF"></option>
-      <option value="Ammonia, 176 oF"></option>
-      <option value="Ammonia, 104 oF"></option>
       <option value="Ammonia, 31 oF"></option>
       <option value="Water, fresh"></option>
-      <option value="Milk"></option>
       <option value="Sodium hydrate"></option>
       <option value="Water, sea 36 oF"></option>
-      <option value="Potassium hydrate"></option>
       <option value="Salt solution 20%"></option>
       <option value="Hydrochlor acid"></option>
-      <option value="Calcium Chloride"></option>
       <option value="Propylene"></option>
-      <option value="Alcohol, ethyl 104 oF (ethanol)"></option>
-      <option value="Alcohol, methyl. 60 - 70 oF"></option>
       <option value="Methanol"></option>
-      <option value="Methyl alcohol"></option>
       <option value="Propylene Glycol"></option>
-      <option value="Alcohol, methyl. 40 - 50 oF"></option>
       <option value="Ethanol"></option>
       <option value="Ethanol 95%"></option>
       <option value="Glycerine"></option>
-      <option value="Propane, 31 oF"></option>
       <option value="Alcohol, propyl"></option>
       <option value="Ethylene glycol"></option>
-      <option value="Alcohol, ethyl 31 oF (ethanol)"></option>
-      <option value="n-Butane, 31 oF"></option>
       <option value="Light Oil, 300 oF"></option>
       <option value="Hexane"></option>
       <option value="Heptane"></option>
       <option value="Ethyl ether"></option>
       <option value="Gasoline, petrol"></option>
-      <option value="Decane"></option>
-      <option value="Dodecane"></option>
       <option value="Ether"></option>
       <option value="Aniline"></option>
       <option value="Acetone"></option>
-      <option value="Iodine"></option>
       <option value="Octane"></option>
-      <option value="Paraffin"></option>
-      <option value="Petroleum"></option>
-      <option value="Benzine"></option>
-      <option value="Asphalt, liquid"></option>
-      <option value="Fuel Oil max."></option>
-      <option value="Lubricating oil"></option>
-      <option value="Diesel fuel"></option>
       <option value="Acetic acid"></option>
-      <option value="Kerosene"></option>
-      <option value="Oil, Castor"></option>
-      <option value="Oil, Olive"></option>
-      <option value="Olive oil"></option>
-      <option value="Rapeseed oil"></option>
-      <option value="Soya bean oil"></option>
       <option value="Diphenylamine"></option>
-      <option value="Benzene, 150 oF"></option>
-      <option value="Transformer oil"></option>
-      <option value="Citron Oil"></option>
-      <option value="Linseed Oil"></option>
-      <option value="Benzene, 60 oF"></option>
-      <option value="Benzol"></option>
-      <option value="Castor Oil"></option>
-      <option value="Light Oil, 60 oF"></option>
-      <option value="Oil, turpentine"></option>
       <option value="Petroleum ether"></option>
       <option value="Naphthalene"></option>
       <option value="Nitric acid"></option>
       <option value="Toluene"></option>
-      <option value="Turpentine oil"></option>
       <option value="Xylene"></option>
-      <option value="Fuel Oil min."></option>
-      <option value="Oil, mineral"></option>
-      <option value="Oil, vegetable"></option>
-      <option value="Sesame oil"></option>
-      <option value="Tar"></option>
-      <option value="Dowtherm"></option>
       <option value="Ethyl chloride"></option>
       <option value="Nitro benzole"></option>
-      <option value="Tuluol"></option>
       <option value="Phenol"></option>
-      <option value="Sodium, 200 oF"></option>
-      <option value="Sulfuric acid concentrated"></option>
       <option value="Sulfuric acid"></option>
       <option value="Trichlor ethylene"></option>
-      <option value="Sodium, 1000 oF"></option>
-      <option value="Silicone oil"></option>
       <option value="Chloroform"></option>
-      <option value="Dichlorodifluoromethane R-12 saturated 120 oF"></option>
-      <option value="Carbon Disulfide"></option>
-      <option value="Dichlorodifluoromethane R-12 saturated 0 oF"></option>
-      <option value="Perchlor ethylene"></option>
-      <option value="Dichlorodifluoromethane R-12 saturated -40 oF"></option>
-      <option value="Carbon Tetrachloride"></option>
-      <option value="Bromine"></option>
-      <option value="Bismuth, 1400 oF"></option>
-      <option value="Bismuth, 1000 oF"></option>
-      <option value="Bismuth, 800 oF"></option>
-      <option value="Mercury"></option>
+      <option value="Dichloromethane"></option>
+      <option value="Ethyl Acetate"></option>
+      <option value="THF"></option>
+      <option value="Acetonitrile"></option>
+      <option value="2-propanol"></option>
+      <option value="Pyridine"></option>
+      <option value="DMF"></option>
+      <option value="DMSO"></option>
     </datalist>
     <datalist id="jacket-cp-list">
       <option value="Water, fresh"></option>
@@ -667,104 +664,50 @@
       let uaB = NaN;
 
       const solventCp = new Map([
-        ["ammonia, 238 of", 6.74],
-        ["ammonia, 211 of", 6.2],
-        ["ammonia, 176 of", 5.4],
-        ["ammonia, 104 of", 4.86],
         ["ammonia, 31 of", 4.6],
         ["water, fresh", 4.19],
-        ["milk", 3.93],
         ["sodium hydrate", 3.93],
         ["water, sea 36 of", 3.93],
-        ["potassium hydrate", 3.68],
         ["salt solution 20%", 3.43],
         ["hydrochlor acid", 3.14],
-        ["calcium chloride", 3.06],
         ["propylene", 2.85],
-        ["alcohol, ethyl 104 of (ethanol)", 2.72],
-        ["alcohol, methyl. 60 - 70 of", 2.51],
         ["methanol", 2.51],
-        ["methyl alcohol", 2.51],
         ["propylene glycol", 2.5],
-        ["alcohol, methyl. 40 - 50 of", 2.47],
         ["ethanol", 2.43],
         ["ethanol 95%", 2.43],
         ["glycerine", 2.43],
-        ["propane, 31 of", 2.4],
         ["alcohol, propyl", 2.37],
         ["ethylene glycol", 2.36],
-        ["alcohol, ethyl 31 of (ethanol)", 2.3],
-        ["n-butane, 31 of", 2.3],
         ["light oil, 300 of", 2.3],
         ["hexane", 2.26],
         ["heptane", 2.24],
         ["ethyl ether", 2.22],
         ["gasoline, petrol", 2.22],
-        ["decane", 2.21],
-        ["dodecane", 2.21],
         ["ether", 2.21],
         ["aniline", 2.18],
         ["acetone", 2.15],
-        ["iodine", 2.15],
         ["octane", 2.15],
-        ["paraffin", 2.13],
-        ["petroleum", 2.13],
-        ["benzine", 2.1],
-        ["asphalt, liquid", 2.09],
-        ["fuel oil max.", 2.09],
-        ["lubricating oil", 2.09],
-        ["diesel fuel", 2.05],
         ["acetic acid", 2.043],
-        ["kerosene", 2.01],
-        ["oil, castor", 1.97],
-        ["oil, olive", 1.97],
-        ["olive oil", 1.97],
-        ["rapeseed oil", 1.97],
-        ["soya bean oil", 1.97],
         ["diphenylamine", 1.93],
-        ["benzene, 150 of", 1.92],
-        ["transformer oil", 1.88],
-        ["citron oil", 1.84],
-        ["linseed oil", 1.84],
-        ["benzene, 60 of", 1.8],
-        ["benzol", 1.8],
-        ["castor oil", 1.8],
-        ["light oil, 60 of", 1.8],
-        ["oil, turpentine", 1.8],
         ["petroleum ether", 1.76],
         ["naphthalene", 1.72],
         ["nitric acid", 1.72],
         ["toluene", 1.72],
-        ["turpentine oil", 1.72],
         ["xylene", 1.72],
-        ["fuel oil min.", 1.67],
-        ["oil, mineral", 1.67],
-        ["oil, vegetable", 1.67],
-        ["sesame oil", 1.63],
-        ["tar", 1.56],
-        ["dowtherm", 1.55],
         ["ethyl chloride", 1.54],
         ["nitro benzole", 1.52],
-        ["tuluol", 1.51],
         ["phenol", 1.43],
-        ["sodium, 200 of", 1.38],
-        ["sulfuric acid concentrated", 1.38],
         ["sulfuric acid", 1.34],
         ["trichlor ethylene", 1.3],
-        ["sodium, 1000 of", 1.26],
-        ["silicone oil", 1.09],
         ["chloroform", 1.05],
-        ["dichlorodifluoromethane r-12 saturated 120 of", 1.02],
-        ["carbon disulfide", 0.992],
-        ["dichlorodifluoromethane r-12 saturated 0 of", 0.91],
-        ["perchlor ethylene", 0.905],
-        ["dichlorodifluoromethane r-12 saturated -40 of", 0.88],
-        ["carbon tetrachloride", 0.866],
-        ["bromine", 0.47],
-        ["bismuth, 1400 of", 0.165],
-        ["bismuth, 1000 of", 0.155],
-        ["bismuth, 800 of", 0.15],
-        ["mercury", 0.14],
+        ["dichloromethane", 1.16],
+        ["ethyl acetate", 1.94],
+        ["thf", 1.72],
+        ["acetonitrile", 2.23],
+        ["2-propanol", 2.68],
+        ["pyridine", 1.68],
+        ["dmf", 2.0],
+        ["dmso", 1.9],
       ]);
 
       const jacketCp = new Map([
@@ -817,6 +760,50 @@
           output = value.toFixed(6);
         }
         return output.replace(/\.?0+$/, "");
+      }
+
+      const storagePrefix = "heating-input:";
+
+      function saveInputValue(input) {
+        if (!input.id) {
+          return;
+        }
+        sessionStorage.setItem(`${storagePrefix}${input.id}`, input.value);
+      }
+
+      function enforceNonNegative(input) {
+        if (input.type !== "number") {
+          return;
+        }
+        const value = input.valueAsNumber;
+        if (Number.isFinite(value) && value < 0) {
+          input.value = "0";
+        }
+      }
+
+      function restoreInputs() {
+        const inputs = document.querySelectorAll("input:not([readonly])");
+        inputs.forEach((input) => {
+          if (!input.id) {
+            return;
+          }
+          const stored = sessionStorage.getItem(`${storagePrefix}${input.id}`);
+          if (stored !== null) {
+            input.value = stored;
+            enforceNonNegative(input);
+          }
+        });
+      }
+
+      function clearInputs() {
+        const inputs = document.querySelectorAll("input:not([readonly])");
+        inputs.forEach((input) => {
+          input.value = "";
+          if (input.id) {
+            sessionStorage.removeItem(`${storagePrefix}${input.id}`);
+          }
+        });
+        recalc();
       }
 
       function lmtD(deltaHi, deltaHo) {
@@ -896,6 +883,41 @@
         markNeeded("e-tv", eTvRaw.trim() === "" || !Number.isFinite(eTv));
         markNeeded("e-tji", eTjiRaw.trim() === "" || !Number.isFinite(eTji));
         markNeeded("e-cp", !(eCp > 0));
+      }
+
+      function initDatalistFilter(inputId, listId) {
+        const input = document.getElementById(inputId);
+        const list = document.getElementById(listId);
+        if (!input || !list) {
+          return;
+        }
+        const options = Array.from(list.options).map((option) => option.value);
+
+        function render(filtered) {
+          list.innerHTML = "";
+          filtered.forEach((value) => {
+            const option = document.createElement("option");
+            option.value = value;
+            list.appendChild(option);
+          });
+        }
+
+        render([]);
+        input.addEventListener("input", () => {
+          const query = input.value.trim().toLowerCase();
+          if (query.length < 2) {
+            render([]);
+            return;
+          }
+          const filtered = options.filter((value) => value.toLowerCase().includes(query));
+          render(filtered);
+        });
+        input.addEventListener("blur", () => {
+          const query = input.value.trim().toLowerCase();
+          if (query.length < 2) {
+            render([]);
+          }
+        });
       }
 
       function calcMethodA() {
@@ -1009,9 +1031,21 @@
 
       function wire() {
         const inputs = document.querySelectorAll("input:not([readonly])");
+        restoreInputs();
         inputs.forEach((input) => {
-          input.addEventListener("input", recalc);
+          input.addEventListener("input", () => {
+            enforceNonNegative(input);
+            saveInputValue(input);
+            recalc();
+          });
         });
+        const clearButton = document.getElementById("clear-values");
+        if (clearButton) {
+          clearButton.addEventListener("click", clearInputs);
+        }
+        initDatalistFilter("a-cp", "solvent-cp-list");
+        initDatalistFilter("b-cp", "jacket-cp-list");
+        initDatalistFilter("e-cp", "jacket-cp-list");
         recalc();
       }
 

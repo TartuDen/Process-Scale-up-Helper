@@ -212,6 +212,23 @@
         margin-top: 6px;
       }
 
+      .action-row {
+        margin-top: 10px;
+      }
+
+      .ghost-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 8px 14px;
+        border-radius: 999px;
+        border: 1px solid rgba(46, 106, 138, 0.4);
+        color: var(--accent-2);
+        background: transparent;
+        font-size: 13px;
+        cursor: pointer;
+      }
+
       footer {
         text-align: center;
         padding: 0 18px 24px;
@@ -248,6 +265,9 @@
         <a href="index.html">Back to home</a> | Need help selecting Np or impeller setup? See the
         <a href="np-guide.html">Impeller & Np guide</a>.
       </p>
+      <div class="action-row">
+        <button class="ghost-button" type="button" id="clear-values">Clear values</button>
+      </div>
     </header>
 
     <main>
@@ -256,7 +276,7 @@
         <div class="grid">
           <div class="field">
             <label for="pv-rho">Density rho (g/mL)</label>
-            <input id="pv-rho" type="number" step="any" placeholder="e.g. 1 for water" />
+            <input id="pv-rho" type="number" step="any" min="0" placeholder="e.g. 1 for water" />
           </div>
           <div class="field with-hint">
             <label for="pv-mu">
@@ -271,49 +291,49 @@
               Power number lab Np
               <span class="help" data-tooltip="Dimensionless power number for the lab impeller in the given flow regime.">?</span>
             </label>
-            <input id="pv-np-lab" type="number" step="any" placeholder="e.g. 3.5" />
+            <input id="pv-np-lab" type="number" step="any" min="0" placeholder="e.g. 3.5" />
           </div>
           <div class="field">
             <label for="pv-d-lab">
               Impeller diameter lab D (mm)
               <span class="help" data-tooltip="Impeller diameter used in the lab tank.">?</span>
             </label>
-            <input id="pv-d-lab" type="number" step="any" placeholder="e.g. 100" />
+            <input id="pv-d-lab" type="number" step="any" min="0" placeholder="e.g. 100" />
           </div>
           <div class="field">
             <label for="pv-rpm-lab">
               Agitator speed lab (rpm)
               <span class="help" data-tooltip="Lab impeller speed in revolutions per minute.">?</span>
             </label>
-            <input id="pv-rpm-lab" type="number" step="any" placeholder="e.g. 300" />
+            <input id="pv-rpm-lab" type="number" step="any" min="0" placeholder="e.g. 300" />
           </div>
           <div class="field">
             <label for="pv-v-lab">
               Working volume lab (L)
               <span class="help" data-tooltip="Liquid working volume in the lab vessel.">?</span>
             </label>
-            <input id="pv-v-lab" type="number" step="any" placeholder="e.g. 2" />
+            <input id="pv-v-lab" type="number" step="any" min="0" placeholder="e.g. 2" />
           </div>
           <div class="field">
             <label for="pv-d-plant">
               Impeller diameter plant D (mm)
               <span class="help" data-tooltip="Impeller diameter for the plant-scale tank.">?</span>
             </label>
-            <input id="pv-d-plant" type="number" step="any" placeholder="e.g. 1200" />
+            <input id="pv-d-plant" type="number" step="any" min="0" placeholder="e.g. 1200" />
           </div>
           <div class="field">
             <label for="pv-v-plant">
               Working volume plant (L)
               <span class="help" data-tooltip="Liquid working volume at plant scale.">?</span>
             </label>
-            <input id="pv-v-plant" type="number" step="any" placeholder="e.g. 6000" />
+            <input id="pv-v-plant" type="number" step="any" min="0" placeholder="e.g. 1000" />
           </div>
           <div class="field">
             <label for="pv-np-plant">
               Power number plant Np
               <span class="help" data-tooltip="Power number for the plant impeller; can differ from lab if geometry differs.">?</span>
             </label>
-            <input id="pv-np-plant" type="number" step="any" placeholder="e.g. 3.5" />
+            <input id="pv-np-plant" type="number" step="any" min="0" placeholder="e.g. 3.5" />
           </div>
         </div>
         <div class="results grid">
@@ -394,7 +414,7 @@
               Density rho (g/mL)
               <span class="help" data-tooltip="Fluid density used for Reynolds and power calculations.">?</span>
             </label>
-            <input id="tip-rho" type="number" step="any" placeholder="e.g. 1 for water" />
+            <input id="tip-rho" type="number" step="any" min="0" placeholder="e.g. 1 for water" />
           </div>
           <div class="field with-hint">
             <label for="tip-mu">
@@ -409,35 +429,35 @@
               Power number plant Np
               <span class="help" data-tooltip="Power number for the plant impeller.">?</span>
             </label>
-            <input id="tip-np-plant" type="number" step="any" placeholder="e.g. 3.5" />
+            <input id="tip-np-plant" type="number" step="any" min="0" placeholder="e.g. 3.5" />
           </div>
           <div class="field">
             <label for="tip-d-lab">
               Impeller diameter lab D (mm)
               <span class="help" data-tooltip="Impeller diameter used in the lab tank.">?</span>
             </label>
-            <input id="tip-d-lab" type="number" step="any" placeholder="e.g. 100" />
+            <input id="tip-d-lab" type="number" step="any" min="0" placeholder="e.g. 100" />
           </div>
           <div class="field">
             <label for="tip-rpm-lab">
               Agitator speed lab (rpm)
               <span class="help" data-tooltip="Lab impeller speed in revolutions per minute.">?</span>
             </label>
-            <input id="tip-rpm-lab" type="number" step="any" placeholder="e.g. 300" />
+            <input id="tip-rpm-lab" type="number" step="any" min="0" placeholder="e.g. 300" />
           </div>
           <div class="field">
             <label for="tip-d-plant">
               Impeller diameter plant D (mm)
               <span class="help" data-tooltip="Impeller diameter for the plant-scale tank.">?</span>
             </label>
-            <input id="tip-d-plant" type="number" step="any" placeholder="e.g. 1200" />
+            <input id="tip-d-plant" type="number" step="any" min="0" placeholder="e.g. 1200" />
           </div>
           <div class="field">
             <label for="tip-v-plant">
               Working volume plant (L)
               <span class="help" data-tooltip="Liquid working volume at plant scale.">?</span>
             </label>
-            <input id="tip-v-plant" type="number" step="any" placeholder="e.g. 6000" />
+            <input id="tip-v-plant" type="number" step="any" min="0" placeholder="e.g. 1000" />
           </div>
         </div>
         <div class="results grid">
@@ -592,6 +612,16 @@
         return 0;
       }
 
+      function enforceNonNegative(input) {
+        if (input.type !== "number") {
+          return;
+        }
+        const value = input.valueAsNumber;
+        if (Number.isFinite(value) && value < 0) {
+          input.value = "0";
+        }
+      }
+
       function updateMuHint(inputId, hintId) {
         const raw = document.getElementById(inputId).value;
         const key = normalizeName(raw);
@@ -628,6 +658,42 @@
           output = value.toFixed(6);
         }
         return output.replace(/\.?0+$/, "");
+      }
+
+      const storagePrefix = "mixing-input:";
+
+      function saveInputValue(input) {
+        if (!input.id) {
+          return;
+        }
+        sessionStorage.setItem(`${storagePrefix}${input.id}`, input.value);
+      }
+
+      function restoreInputs() {
+        const inputs = document.querySelectorAll("input:not([readonly])");
+        inputs.forEach((input) => {
+          if (!input.id) {
+            return;
+          }
+          const stored = sessionStorage.getItem(`${storagePrefix}${input.id}`);
+          if (stored !== null) {
+            input.value = stored;
+          }
+        });
+      }
+
+      function clearInputs() {
+        const inputs = document.querySelectorAll("input:not([readonly])");
+        inputs.forEach((input) => {
+          input.value = "";
+          if (input.id) {
+            sessionStorage.removeItem(`${storagePrefix}${input.id}`);
+          }
+        });
+        updateMuHint("pv-mu", "pv-mu-hint");
+        updateMuHint("tip-mu", "tip-mu-hint");
+        calcKeepPV();
+        calcKeepTip();
       }
 
       function calcKeepPV() {
@@ -709,14 +775,21 @@
 
       function wire() {
         const inputs = document.querySelectorAll("input:not([readonly])");
+        restoreInputs();
         inputs.forEach((input) => {
           input.addEventListener("input", () => {
+            enforceNonNegative(input);
+            saveInputValue(input);
             updateMuHint("pv-mu", "pv-mu-hint");
             updateMuHint("tip-mu", "tip-mu-hint");
             calcKeepPV();
             calcKeepTip();
           });
         });
+        const clearButton = document.getElementById("clear-values");
+        if (clearButton) {
+          clearButton.addEventListener("click", clearInputs);
+        }
         updateMuHint("pv-mu", "pv-mu-hint");
         updateMuHint("tip-mu", "tip-mu-hint");
         calcKeepPV();
