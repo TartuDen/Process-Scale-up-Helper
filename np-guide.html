@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Impeller & Np Guide</title>
+    <style>
+      :root {
+        --ink: #1a1a1a;
+        --ink-muted: #4a4a4a;
+        --paper: #f6f3ee;
+        --accent: #c06b3e;
+        --accent-2: #2e6a8a;
+        --panel: #fffaf3;
+        --panel-2: #f0f6f8;
+        --shadow: rgba(0, 0, 0, 0.12);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        color: var(--ink);
+        background:
+          radial-gradient(1200px 800px at 10% 10%, #f9efe3 0%, transparent 60%),
+          radial-gradient(900px 700px at 90% 20%, #e8f1f6 0%, transparent 55%),
+          linear-gradient(160deg, #f7f1e8 0%, #f1efe7 45%, #eef2f1 100%);
+        font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande", sans-serif;
+      }
+
+      header {
+        padding: 36px 18px 20px;
+        text-align: center;
+      }
+
+      header h1 {
+        margin: 0;
+        font-family: "Georgia", "Palatino Linotype", "Book Antiqua", serif;
+        font-size: clamp(28px, 3.5vw, 44px);
+        letter-spacing: 0.5px;
+      }
+
+      header p {
+        margin: 10px auto 0;
+        max-width: 760px;
+        color: var(--ink-muted);
+        font-size: clamp(14px, 1.6vw, 18px);
+      }
+
+      main {
+        max-width: 1100px;
+        margin: 0 auto 56px;
+        padding: 0 18px;
+        display: grid;
+        gap: 22px;
+      }
+
+      .panel {
+        background: var(--panel);
+        border-radius: 18px;
+        box-shadow: 0 14px 30px var(--shadow);
+        padding: 20px;
+        animation: rise 0.8s ease both;
+      }
+
+      .panel:nth-of-type(2) {
+        background: var(--panel-2);
+        animation-delay: 0.08s;
+      }
+
+      .panel h2 {
+        margin: 0 0 12px;
+        font-size: 20px;
+        letter-spacing: 0.2px;
+      }
+
+      .cards {
+        display: grid;
+        gap: 16px;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      }
+
+      .card {
+        background: rgba(255, 255, 255, 0.8);
+        border-radius: 14px;
+        padding: 14px;
+        border: 1px solid rgba(0, 0, 0, 0.08);
+      }
+
+      .card h3 {
+        margin: 6px 0 4px;
+        font-size: 16px;
+      }
+
+      .card p {
+        margin: 0;
+        color: var(--ink-muted);
+        font-size: 13px;
+        line-height: 1.4;
+      }
+
+      .np-range {
+        display: inline-block;
+        margin-top: 8px;
+        padding: 4px 8px;
+        border-radius: 999px;
+        background: rgba(46, 106, 138, 0.12);
+        color: var(--accent-2);
+        font-size: 12px;
+      }
+
+      .svg-wrap {
+        width: 100%;
+        height: 120px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #f6f8f9;
+        border-radius: 12px;
+      }
+
+      .svg-wrap img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+        border-radius: 8px;
+      }
+
+      .table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+      }
+
+      .table th,
+      .table td {
+        text-align: left;
+        padding: 8px 10px;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+      }
+
+      .note {
+        font-size: 12px;
+        color: var(--ink-muted);
+        margin-top: 10px;
+      }
+
+      .back-link {
+        color: var(--accent-2);
+        text-decoration: none;
+      }
+
+      footer {
+        text-align: center;
+        padding: 0 18px 24px;
+        color: var(--ink-muted);
+        font-size: 12px;
+      }
+
+      @keyframes rise {
+        from {
+          opacity: 0;
+          transform: translateY(18px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Impeller & Np Guide</h1>
+      <p>
+        Visual overview of common impeller types and how power number (Np) and impeller
+        decks affect scale-up calculations.
+      </p>
+      <p><a class="back-link" href="index.html">Back to Mixing Scale-Up Helper</a></p>
+    </header>
+
+    <main>
+      <section class="panel">
+        <h2>Typical Impeller Types</h2>
+        <div class="cards">
+          <div class="card">
+            <div class="svg-wrap" aria-hidden="true">
+              <img src="imgs/Rushton%20turbine%20impeller.jpg" alt="" />
+            </div>
+            <h3>Rushton (Radial)</h3>
+            <p>High shear, gas dispersion, strong radial flow. Common in fermentation.</p>
+            <span class="np-range">Typical Np: 4 - 6</span>
+          </div>
+          <div class="card">
+            <div class="svg-wrap" aria-hidden="true">
+              <img src="imgs/pitch-blade-turbine-impeller-pbt-.jpg" alt="" />
+            </div>
+            <h3>Pitched Blade (45 deg)</h3>
+            <p>Axial/radial blend; good for blending and suspending solids.</p>
+            <span class="np-range">Typical Np: 1 - 2</span>
+          </div>
+          <div class="card">
+            <div class="svg-wrap" aria-hidden="true">
+              <img src="imgs/Retreat%20Curve%20Impeller.jpg" alt="" />
+            </div>
+            <h3>Retreat Curve (Retreat Blade)</h3>
+            <p>Gentler shear, often used in glass-lined vessels for dispersions.</p>
+            <span class="np-range">Unbaffled Np: 0.30 - 0.35</span>
+            <span class="np-range">Partially baffled Np: 0.50 - 0.70</span>
+            <span class="np-range">Fully baffled Np: 1.06 - 1.10</span>
+          </div>
+          <div class="card">
+            <div class="svg-wrap" aria-hidden="true">
+              <img src="imgs/Axial%20Flow%20Impeller.jpg" alt="" />
+            </div>
+            <h3>Hydrofoil (Axial)</h3>
+            <p>Efficient axial flow, lower shear; often used for bulk blending.</p>
+            <span class="np-range">Typical Np: 0.2 - 0.8</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>How to Choose Np and Deck Count</h2>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Factor</th>
+              <th>Impact</th>
+              <th>Rule of thumb</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Impeller type</td>
+              <td>Sets baseline Np range</td>
+              <td>Pick Np from vendor charts or validated literature.</td>
+            </tr>
+            <tr>
+              <td>Flow regime</td>
+              <td>Np can vary in laminar or transitional flow</td>
+              <td>Use turbulent Np only when Re is high enough.</td>
+            </tr>
+            <tr>
+              <td>Impeller decks</td>
+              <td>Total power scales with number of impellers</td>
+              <td>P_total ~ n_imp * Np * rho * N^3 * D^5.</td>
+            </tr>
+            <tr>
+              <td>Diameter ratio</td>
+              <td>Changes torque and tip speed</td>
+              <td>Keep D/T consistent if possible during scale-up.</td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="note">
+          Use vendor curves when available. This guide is indicative and should be validated
+          for your specific geometry and baffle setup.
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      Prototype reference page. Always validate Np values with impeller vendor data.
+    </footer>
+  </body>
+</html>
