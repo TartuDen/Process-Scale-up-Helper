@@ -257,6 +257,80 @@
         cursor: pointer;
       }
 
+      .tutorial-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(20, 24, 28, 0.45);
+        display: flex;
+        justify-content: flex-end;
+        align-items: flex-start;
+        padding: 24px;
+        z-index: 1000;
+      }
+
+      .tutorial-overlay[hidden] {
+        display: none;
+      }
+
+      .tutorial-card {
+        width: min(520px, 92vw);
+        background: #ffffff;
+        border-radius: 16px;
+        padding: 18px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+        display: grid;
+        gap: 10px;
+        position: relative;
+        z-index: 1002;
+      }
+
+      .tutorial-step {
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--accent-2);
+        font-weight: 700;
+      }
+
+      .tutorial-text {
+        font-size: 15px;
+        color: var(--ink);
+        line-height: 1.45;
+      }
+
+      .tutorial-actions {
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+        flex-wrap: wrap;
+      }
+
+      .tutorial-button {
+        border-radius: 999px;
+        border: 1px solid rgba(46, 106, 138, 0.4);
+        background: transparent;
+        color: var(--accent-2);
+        padding: 8px 14px;
+        font-size: 13px;
+        cursor: pointer;
+      }
+
+      .tutorial-button.primary {
+        background: var(--accent);
+        border-color: var(--accent);
+        color: #fff;
+      }
+
+      .tutorial-target {
+        outline: 3px solid rgba(46, 106, 138, 0.6);
+        box-shadow: 0 0 0 6px rgba(46, 106, 138, 0.15);
+        border-radius: 12px;
+        position: relative;
+        z-index: 1001;
+        background-clip: padding-box;
+        pointer-events: none;
+      }
+
       .hint {
         position: absolute;
         left: 0;
@@ -284,6 +358,34 @@
           transform: translateY(0);
         }
       }
+
+      @media (max-width: 720px) {
+        .tutorial-overlay {
+          justify-content: center;
+          align-items: flex-end;
+          padding: 16px;
+        }
+
+        .tutorial-card {
+          width: min(210px, 86vw);
+          padding: 8px;
+          gap: 8px;
+        }
+
+        .tutorial-text {
+          font-size: 11px;
+          line-height: 1.25;
+        }
+
+        .tutorial-actions {
+          gap: 4px;
+        }
+
+        .tutorial-button {
+          padding: 4px 8px;
+          font-size: 10px;
+        }
+      }
     </style>
   </head>
   <body>
@@ -296,6 +398,7 @@
       <p><a href="index.html">Back to home</a></p>
       <div class="action-row">
         <button class="ghost-button" type="button" id="clear-values">Clear values</button>
+        <button class="ghost-button" type="button" id="start-tutorial">Tutorial</button>
       </div>
     </header>
 
@@ -602,6 +705,18 @@
       Prototype only. Validate inputs, units, and assumptions before use.
     </footer>
 
+    <div class="tutorial-overlay" id="tutorial-overlay" hidden>
+      <div class="tutorial-card" role="dialog" aria-modal="true" aria-live="polite">
+        <div class="tutorial-step" id="tutorial-step">Step 1 of 1</div>
+        <div class="tutorial-text" id="tutorial-text"></div>
+        <div class="tutorial-actions">
+          <button class="tutorial-button" type="button" id="tutorial-back">Back</button>
+          <button class="tutorial-button primary" type="button" id="tutorial-next">Next</button>
+          <button class="tutorial-button" type="button" id="tutorial-close">Exit</button>
+        </div>
+      </div>
+    </div>
+
     <datalist id="solvent-cp-list">
       <option value="Ammonia, 31 oF"></option>
       <option value="Water, fresh"></option>
@@ -660,6 +775,82 @@
     </datalist>
 
     <script>
+      const tutorialSteps = [
+        {
+          selector: "#method-a h2",
+          title: "Method A vs Method B",
+          text:
+            "Method A uses a time-constant test (tau) to fit UA. Method B uses jacket inlet/outlet data and LMTD. " +
+            "This walkthrough covers Method A and the exotherm check.",
+        },
+        {
+          selector: "#a-m",
+          title: "Liquid mass",
+          text: "Enter vessel liquid mass for the test volume (kg).",
+        },
+        {
+          selector: "#a-cp",
+          title: "Liquid heat capacity",
+          text: "Enter Cp in kJ/kg/K or type a solvent name (e.g., Acetone).",
+        },
+        {
+          selector: "#a-tau",
+          title: "Time constant",
+          text:
+            "Tau comes from a jacket step test. It is the time to reach 63% of the temperature change.",
+        },
+        {
+          selector: "#exotherm h2",
+          title: "Exotherm check",
+          text:
+            "This section compares reaction heat with cooling capacity using the working UA.",
+        },
+        {
+          selector: "#e-dh",
+          title: "Reaction enthalpy",
+          text:
+            "Use calorimetry or trusted literature for |Delta H_rxn| in kJ/mol.",
+        },
+        {
+          selector: "#e-ndot",
+          title: "Molar rate",
+          text: "Enter the planned feed or reaction rate in mol/h.",
+        },
+        {
+          selector: "#e-sf",
+          title: "Safety factor",
+          text: "Apply a safety factor to the heat release (e.g., 1.2).",
+        },
+        {
+          selector: "#e-tv",
+          title: "Vessel temperature",
+          text: "Planned bulk vessel temperature during the reaction.",
+        },
+        {
+          selector: "#e-tji",
+          title: "Jacket inlet temperature",
+          text: "Planned jacket inlet temperature for the cooling plan.",
+        },
+        {
+          selector: "#e-cp",
+          title: "Jacket heat capacity",
+          text: "Choose the coolant Cp or type a numeric value.",
+        },
+        {
+          selector: "#e-mdot",
+          title: "Optional jacket flow",
+          text:
+            "If you know jacket flow, enter it to estimate outlet temperature and LMTD.",
+        },
+        {
+          selector: "#exotherm .results",
+          title: "Calculated results",
+          text:
+            "Results include Q_rxn (heat release), Q_req (with safety factor), planned outlet temperature, LMTD, " +
+            "Q_removed (cooling capacity), max safe n_dot, and a pass/fail status.",
+        },
+      ];
+
       let uaA = NaN;
       let uaB = NaN;
 
@@ -1055,7 +1246,98 @@
         recalc();
       }
 
+      function initTutorial() {
+        const overlay = document.getElementById("tutorial-overlay");
+        const stepEl = document.getElementById("tutorial-step");
+        const textEl = document.getElementById("tutorial-text");
+        const backBtn = document.getElementById("tutorial-back");
+        const nextBtn = document.getElementById("tutorial-next");
+        const closeBtn = document.getElementById("tutorial-close");
+        const startBtn = document.getElementById("start-tutorial");
+
+        if (!overlay || !stepEl || !textEl || !backBtn || !nextBtn || !closeBtn || !startBtn) {
+          return;
+        }
+
+        let index = 0;
+        let currentTarget = null;
+
+        function clearHighlight() {
+          if (currentTarget) {
+            currentTarget.classList.remove("tutorial-target");
+            currentTarget = null;
+          }
+        }
+
+        function showStep() {
+          clearHighlight();
+          let step = tutorialSteps[index];
+          while (step && !document.querySelector(step.selector)) {
+            index += 1;
+            step = tutorialSteps[index];
+          }
+          if (!step) {
+            overlay.hidden = true;
+            return;
+          }
+          const el = document.querySelector(step.selector);
+          const highlight = el ? el.closest(".field") || el : null;
+          if (highlight) {
+            currentTarget = highlight;
+            highlight.classList.add("tutorial-target");
+            highlight.scrollIntoView({ behavior: "smooth", block: "center" });
+          }
+          stepEl.textContent = `Step ${index + 1} of ${tutorialSteps.length}: ${step.title}`;
+          textEl.textContent = step.text;
+          backBtn.disabled = index === 0;
+          nextBtn.textContent = index === tutorialSteps.length - 1 ? "Done" : "Next";
+        }
+
+        function openTutorial() {
+          index = 0;
+          overlay.hidden = false;
+          overlay.removeAttribute("hidden");
+          overlay.style.display = "flex";
+          showStep();
+        }
+
+        function closeTutorial() {
+          overlay.hidden = true;
+          overlay.setAttribute("hidden", "");
+          overlay.style.display = "none";
+          clearHighlight();
+        }
+
+        startBtn.addEventListener("click", openTutorial);
+        closeBtn.addEventListener("click", closeTutorial);
+        backBtn.addEventListener("click", () => {
+          if (index > 0) {
+            index -= 1;
+            showStep();
+          }
+        });
+        nextBtn.addEventListener("click", () => {
+          if (index < tutorialSteps.length - 1) {
+            index += 1;
+            showStep();
+          } else {
+            closeTutorial();
+          }
+        });
+        overlay.addEventListener("click", (event) => {
+          if (event.target === overlay) {
+            closeTutorial();
+          }
+        });
+        document.addEventListener("keydown", (event) => {
+          if (event.key === "Escape" && !overlay.hidden) {
+            closeTutorial();
+          }
+        });
+      }
+
       window.addEventListener("DOMContentLoaded", wire);
+      window.addEventListener("DOMContentLoaded", initTutorial);
     </script>
   </body>
 </html>
