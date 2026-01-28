@@ -77,6 +77,14 @@
         letter-spacing: 0.2px;
       }
 
+      .panel-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+
       .grid {
         display: grid;
         gap: 14px;
@@ -250,6 +258,11 @@
         cursor: pointer;
       }
 
+      .ghost-button.compact {
+        padding: 6px 12px;
+        font-size: 12px;
+      }
+
       .tutorial-overlay {
         position: fixed;
         inset: 0;
@@ -372,6 +385,11 @@
           padding: 4px 8px;
           font-size: 10px;
         }
+
+        .ghost-button.compact {
+          padding: 5px 10px;
+          font-size: 11px;
+        }
       }
     </style>
   </head>
@@ -394,7 +412,10 @@
 
     <main>
       <section class="panel" id="keep-pv">
-        <h2>Keep P/V Constant</h2>
+        <div class="panel-header">
+          <h2>Keep P/V Constant</h2>
+          <button class="ghost-button compact" type="button" id="copy-pv">Copy</button>
+        </div>
         <div class="row-block">
           <div class="row-title">Fluid properties</div>
           <div class="grid row-grid">
@@ -552,7 +573,10 @@
       </section>
 
       <section class="panel" id="keep-tip">
-        <h2>Keep Tip Speed Constant</h2>
+        <div class="panel-header">
+          <h2>Keep Tip Speed Constant</h2>
+          <button class="ghost-button compact" type="button" id="copy-tip">Copy</button>
+        </div>
         <div class="row-block">
           <div class="row-title">Fluid properties</div>
           <div class="grid row-grid">
@@ -1030,6 +1054,179 @@
         calcKeepTip();
       }
 
+      function cleanLabel(labelEl) {
+        if (!labelEl) {
+          return "";
+        }
+        const clone = labelEl.cloneNode(true);
+        clone.querySelectorAll(".help,.pill").forEach((el) => el.remove());
+        return clone.textContent.replace(/\s+/g, " ").trim();
+      }
+
+      function fieldLabel(id) {
+        const el = document.getElementById(id);
+        if (!el) {
+          return id;
+        }
+        const field = el.closest(".field");
+        const label = field ? field.querySelector("label") : null;
+        return cleanLabel(label) || id;
+      }
+
+      function formatValue(id, opts = {}) {
+        const el = document.getElementById(id);
+        if (!el) {
+          return "";
+        }
+        const raw = String(el.value || "").trim();
+        if (!raw) {
+          return "";
+        }
+        if (opts.kind === "mu") {
+          const numeric = Number(raw);
+          if (Number.isFinite(numeric)) {
+            return format(numeric);
+          }
+          const mu = parseMu(raw);
+          return mu > 0 ? `${raw} (${format(mu)} Pa*s)` : raw;
+        }
+        const numeric = Number(raw);
+        if (Number.isFinite(numeric)) {
+          return format(numeric);
+        }
+        return raw;
+      }
+
+      function buildCopyBlock(title, inputIds, outputIds, options = {}) {
+        const lines = [title, ""];
+        const inputLines = inputIds
+          .map((id) => {
+            const label = fieldLabel(id);
+            const value = formatValue(id, options[id]);
+            return value ? `${label} - ${value}` : "";
+          })
+          .filter(Boolean);
+        const outputLines = outputIds
+          .map((id) => {
+            const label = fieldLabel(id);
+            const value = formatValue(id);
+            return value ? `${label} - ${value}` : "";
+          })
+          .filter(Boolean);
+
+        if (inputLines.length) {
+          lines.push("Inputs:");
+          lines.push(...inputLines);
+          lines.push("");
+        }
+        if (outputLines.length) {
+          lines.push("Results:");
+          lines.push(...outputLines);
+        }
+        return lines.join("\n").trim();
+      }
+
+      async function copyTextToClipboard(text) {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          await navigator.clipboard.writeText(text);
+          return;
+        }
+        const textarea = document.createElement("textarea");
+        textarea.value = text;
+        textarea.style.position = "fixed";
+        textarea.style.opacity = "0";
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textarea);
+      }
+
+      function wireCopyButtons() {
+        const copyPv = document.getElementById("copy-pv");
+        const copyTip = document.getElementById("copy-tip");
+        const pvInputIds = [
+          "pv-rho",
+          "pv-mu",
+          "pv-np-lab",
+          "pv-d-lab",
+          "pv-rpm-lab",
+          "pv-v-lab",
+          "pv-d-plant",
+          "pv-v-plant",
+          "pv-np-plant",
+        ];
+        const pvOutputIds = [
+          "pv-n-lab",
+          "pv-ut-lab",
+          "pv-p-lab",
+          "pv-pv-lab",
+          "pv-re-lab",
+          "pv-p-plant",
+          "pv-n-plant",
+          "pv-rpm-plant",
+          "pv-ut-plant",
+          "pv-re-plant",
+          "pv-torque",
+          "pv-pv-plant",
+        ];
+        const tipInputIds = [
+          "tip-rho",
+          "tip-mu",
+          "tip-d-lab",
+          "tip-rpm-lab",
+          "tip-d-plant",
+          "tip-v-plant",
+          "tip-np-plant",
+        ];
+        const tipOutputIds = [
+          "tip-n-lab",
+          "tip-ut-target",
+          "tip-re-lab",
+          "tip-n-plant",
+          "tip-rpm-plant",
+          "tip-p-plant",
+          "tip-pv-plant",
+          "tip-re-plant",
+          "tip-torque",
+        ];
+        const pvOptions = { "pv-mu": { kind: "mu" } };
+        const tipOptions = { "tip-mu": { kind: "mu" } };
+
+        if (copyPv) {
+          copyPv.addEventListener("click", async () => {
+            const text = buildCopyBlock(
+              "Keep P/V Constant",
+              pvInputIds,
+              pvOutputIds,
+              pvOptions
+            );
+            await copyTextToClipboard(text);
+            const original = copyPv.textContent;
+            copyPv.textContent = "Copied";
+            setTimeout(() => {
+              copyPv.textContent = original;
+            }, 1200);
+          });
+        }
+
+        if (copyTip) {
+          copyTip.addEventListener("click", async () => {
+            const text = buildCopyBlock(
+              "Keep Tip Speed Constant",
+              tipInputIds,
+              tipOutputIds,
+              tipOptions
+            );
+            await copyTextToClipboard(text);
+            const original = copyTip.textContent;
+            copyTip.textContent = "Copied";
+            setTimeout(() => {
+              copyTip.textContent = original;
+            }, 1200);
+          });
+        }
+      }
+
       function initTutorial() {
         const overlay = document.getElementById("tutorial-overlay");
         const stepEl = document.getElementById("tutorial-step");
@@ -1130,6 +1327,7 @@
       }
 
       window.addEventListener("DOMContentLoaded", wire);
+      window.addEventListener("DOMContentLoaded", wireCopyButtons);
       window.addEventListener("DOMContentLoaded", initTutorial);
     </script>
   </body>
