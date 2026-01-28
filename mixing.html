@@ -886,7 +886,7 @@
         const hint = document.getElementById(hintId);
         if (viscosityMap.has(key)) {
           const mu = viscosityMap.get(key);
-          hint.textContent = `Selected: ${raw} (${format(mu)} Pa*s)`;
+          hint.textContent = `Selected: ${raw} (${formatMu(mu)} Pa*s)`;
         } else {
           hint.textContent = "";
         }
@@ -907,6 +907,20 @@
           return "";
         }
         return value.toFixed(1);
+      }
+
+      function formatMu(value) {
+        if (!Number.isFinite(value)) {
+          return "";
+        }
+        const abs = Math.abs(value);
+        if (abs >= 1000) {
+          return value.toFixed(2);
+        }
+        if (abs >= 1) {
+          return value.toFixed(3);
+        }
+        return value.toFixed(6).replace(/\.?0+$/, "");
       }
 
       const storagePrefix = "mixing-input:";
@@ -1076,10 +1090,10 @@
         if (opts.kind === "mu") {
           const numeric = Number(raw);
           if (Number.isFinite(numeric)) {
-            return format(numeric);
+            return formatMu(numeric);
           }
           const mu = parseMu(raw);
-          return mu > 0 ? `${raw} (${format(mu)} Pa*s)` : raw;
+          return mu > 0 ? `${raw} (${formatMu(mu)} Pa*s)` : raw;
         }
         const numeric = Number(raw);
         if (Number.isFinite(numeric)) {
