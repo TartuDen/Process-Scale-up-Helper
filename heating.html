@@ -81,6 +81,14 @@
         letter-spacing: 0.2px;
       }
 
+      .panel-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+
       details.panel summary {
         list-style: none;
         cursor: pointer;
@@ -257,6 +265,11 @@
         cursor: pointer;
       }
 
+      .ghost-button.compact {
+        padding: 6px 12px;
+        font-size: 12px;
+      }
+
       .tutorial-overlay {
         position: fixed;
         inset: 0;
@@ -385,6 +398,11 @@
           padding: 4px 8px;
           font-size: 10px;
         }
+
+        .ghost-button.compact {
+          padding: 5px 10px;
+          font-size: 11px;
+        }
       }
     </style>
   </head>
@@ -404,7 +422,10 @@
 
     <main>
       <section class="panel" id="method-a">
-        <h2>Method A: Time Constant (tau-fit)</h2>
+        <div class="panel-header">
+          <h2>Method A: Time Constant (tau-fit)</h2>
+          <button class="ghost-button compact" type="button" id="copy-a">Copy</button>
+        </div>
         <div class="grid">
           <div class="field">
             <label for="a-m">
@@ -472,7 +493,12 @@
       </section>
 
       <details class="panel" id="method-b">
-        <summary><h2>Method B: LMTD (Jacket Energy Balance)</h2></summary>
+        <summary>
+          <div class="panel-header">
+            <h2>Method B: LMTD (Jacket Energy Balance)</h2>
+            <button class="ghost-button compact" type="button" id="copy-b">Copy</button>
+          </div>
+        </summary>
         <div class="grid">
           <div class="field">
             <label for="b-mdot">
@@ -568,7 +594,10 @@
       </details>
 
       <section class="panel" id="exotherm">
-        <h2>Exotherm Check</h2>
+        <div class="panel-header">
+          <h2>Exotherm Check</h2>
+          <button class="ghost-button compact" type="button" id="copy-exotherm">Copy</button>
+        </div>
         <div class="grid">
           <div class="field">
             <label>
@@ -1246,6 +1275,175 @@
         recalc();
       }
 
+      function cleanLabel(labelEl) {
+        if (!labelEl) {
+          return "";
+        }
+        const clone = labelEl.cloneNode(true);
+        clone.querySelectorAll(".help,.pill").forEach((el) => el.remove());
+        return clone.textContent.replace(/\s+/g, " ").trim();
+      }
+
+      function fieldLabel(id) {
+        const el = document.getElementById(id);
+        if (!el) {
+          return id;
+        }
+        const field = el.closest(".field");
+        const label = field ? field.querySelector("label") : null;
+        return cleanLabel(label) || id;
+      }
+
+      function formatCpValue(raw, lookup) {
+        const trimmed = String(raw || "").trim();
+        if (!trimmed) {
+          return "";
+        }
+        const numeric = Number(trimmed);
+        if (Number.isFinite(numeric)) {
+          return format(numeric);
+        }
+        const cp = parseCp(trimmed, lookup);
+        return cp > 0 ? `${trimmed} (${format(cp)} kJ/kg/K)` : trimmed;
+      }
+
+      function formatValue(id, opts = {}) {
+        const el = document.getElementById(id);
+        if (!el) {
+          return "";
+        }
+        const raw = String(el.value || "").trim();
+        if (!raw) {
+          return "";
+        }
+        if (opts.kind === "cp-solvent") {
+          return formatCpValue(raw, solventCp);
+        }
+        if (opts.kind === "cp-jacket") {
+          return formatCpValue(raw, jacketCp);
+        }
+        const numeric = Number(raw);
+        if (Number.isFinite(numeric)) {
+          return format(numeric);
+        }
+        return raw;
+      }
+
+      function buildCopyBlock(title, inputIds, outputIds, options = {}) {
+        const lines = [title, ""];
+        const inputLines = inputIds
+          .map((id) => {
+            const label = fieldLabel(id);
+            const value = formatValue(id, options[id]);
+            return value ? `${label} - ${value}` : "";
+          })
+          .filter(Boolean);
+        const outputLines = outputIds
+          .map((id) => {
+            const label = fieldLabel(id);
+            const value = formatValue(id);
+            return value ? `${label} - ${value}` : "";
+          })
+          .filter(Boolean);
+
+        if (inputLines.length) {
+          lines.push("Inputs:");
+          lines.push(...inputLines);
+          lines.push("");
+        }
+        if (outputLines.length) {
+          lines.push("Results:");
+          lines.push(...outputLines);
+        }
+        return lines.join("\n").trim();
+      }
+
+      async function copyTextToClipboard(text) {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          await navigator.clipboard.writeText(text);
+          return;
+        }
+        const textarea = document.createElement("textarea");
+        textarea.value = text;
+        textarea.style.position = "fixed";
+        textarea.style.opacity = "0";
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textarea);
+      }
+
+      function wireCopyButtons() {
+        const copyA = document.getElementById("copy-a");
+        const copyB = document.getElementById("copy-b");
+        const copyExotherm = document.getElementById("copy-exotherm");
+
+        const aInputIds = ["a-m", "a-cp", "a-mh", "a-cph", "a-tau"];
+        const aOutputIds = ["a-mcp", "a-ua-w", "a-ua-kw"];
+        const bInputIds = ["b-mdot", "b-vdot", "b-rho", "b-cp", "b-tji", "b-tjo", "b-tv"];
+        const bOutputIds = ["b-mdot-used", "b-q", "b-lmtd", "b-ua-w", "b-ua-kw"];
+        const eInputIds = ["e-dh", "e-ndot", "e-sf", "e-tv", "e-tji", "e-mdot", "e-cp"];
+        const eOutputIds = [
+          "e-ua-a",
+          "e-ua-b",
+          "e-ua-work",
+          "e-qrxn",
+          "e-qreq",
+          "e-tjo",
+          "e-lmtd",
+          "e-qremoved",
+          "e-ndot-max",
+          "e-status",
+        ];
+
+        const aOptions = { "a-cp": { kind: "cp-solvent" } };
+        const bOptions = { "b-cp": { kind: "cp-jacket" } };
+        const eOptions = { "e-cp": { kind: "cp-jacket" } };
+
+        if (copyA) {
+          copyA.addEventListener("click", async () => {
+            const text = buildCopyBlock("Method A: Time Constant (tau-fit)", aInputIds, aOutputIds, aOptions);
+            await copyTextToClipboard(text);
+            const original = copyA.textContent;
+            copyA.textContent = "Copied";
+            setTimeout(() => {
+              copyA.textContent = original;
+            }, 1200);
+          });
+        }
+
+        if (copyB) {
+          copyB.addEventListener("click", async (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            const text = buildCopyBlock(
+              "Method B: LMTD (Jacket Energy Balance)",
+              bInputIds,
+              bOutputIds,
+              bOptions
+            );
+            await copyTextToClipboard(text);
+            const original = copyB.textContent;
+            copyB.textContent = "Copied";
+            setTimeout(() => {
+              copyB.textContent = original;
+            }, 1200);
+          });
+        }
+
+        if (copyExotherm) {
+          copyExotherm.addEventListener("click", async () => {
+            const text = buildCopyBlock("Exotherm Check", eInputIds, eOutputIds, eOptions);
+            await copyTextToClipboard(text);
+            const original = copyExotherm.textContent;
+            copyExotherm.textContent = "Copied";
+            setTimeout(() => {
+              copyExotherm.textContent = original;
+            }, 1200);
+          });
+        }
+      }
+
       function initTutorial() {
         const overlay = document.getElementById("tutorial-overlay");
         const stepEl = document.getElementById("tutorial-step");
@@ -1337,6 +1535,7 @@
       }
 
       window.addEventListener("DOMContentLoaded", wire);
+      window.addEventListener("DOMContentLoaded", wireCopyButtons);
       window.addEventListener("DOMContentLoaded", initTutorial);
     </script>
   </body>
