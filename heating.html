@@ -970,16 +970,7 @@
         if (!Number.isFinite(value)) {
           return "";
         }
-        const abs = Math.abs(value);
-        let output = "";
-        if (abs >= 1000) {
-          output = value.toFixed(2);
-        } else if (abs >= 1) {
-          output = value.toFixed(3);
-        } else {
-          output = value.toFixed(6);
-        }
-        return output.replace(/\.?0+$/, "");
+        return value.toFixed(1);
       }
 
       const storagePrefix = "heating-input:";
