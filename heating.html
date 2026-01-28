@@ -1335,14 +1335,14 @@
           .map((id) => {
             const label = fieldLabel(id);
             const value = formatValue(id, options[id]);
-            return value ? `${label} - ${value}` : "";
+            return value ? `${label}: ${value}` : "";
           })
           .filter(Boolean);
         const outputLines = outputIds
           .map((id) => {
             const label = fieldLabel(id);
             const value = formatValue(id);
-            return value ? `${label} - ${value}` : "";
+            return value ? `${label}: ${value}` : "";
           })
           .filter(Boolean);
 
