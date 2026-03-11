@@ -1,0 +1,1631 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>PGI Metrics Helper</title>
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <style>
+      :root {
+        --ink: #1a1a1a;
+        --ink-muted: #4a4a4a;
+        --paper: #f6f3ee;
+        --accent: #c06b3e;
+        --accent-2: #2e6a8a;
+        --panel: #fffaf3;
+        --panel-2: #f0f6f8;
+        --shadow: rgba(0, 0, 0, 0.12);
+        --line: rgba(26, 26, 26, 0.14);
+        --ok: #1d6f42;
+        --warn: #985f00;
+        --danger: #8f2f1b;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        color: var(--ink);
+        background:
+          radial-gradient(1200px 800px at 10% 10%, #f9efe3 0%, transparent 60%),
+          radial-gradient(900px 700px at 90% 20%, #e8f1f6 0%, transparent 55%),
+          linear-gradient(160deg, #f7f1e8 0%, #f1efe7 45%, #eef2f1 100%);
+        font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande", sans-serif;
+      }
+
+      header {
+        padding: 36px 18px 20px;
+        text-align: center;
+      }
+
+      header h1 {
+        margin: 0;
+        font-family: "Georgia", "Palatino Linotype", "Book Antiqua", serif;
+        font-size: clamp(28px, 3.5vw, 44px);
+        letter-spacing: 0.5px;
+      }
+
+      header p {
+        margin: 10px auto 0;
+        max-width: 820px;
+        color: var(--ink-muted);
+        font-size: clamp(14px, 1.6vw, 18px);
+      }
+
+      main {
+        max-width: 1180px;
+        margin: 0 auto 56px;
+        padding: 0 18px;
+        display: grid;
+        gap: 22px;
+      }
+
+      .panel {
+        background: var(--panel);
+        border-radius: 18px;
+        box-shadow: 0 14px 30px var(--shadow);
+        padding: 20px;
+        animation: rise 0.8s ease both;
+      }
+
+      .panel:nth-of-type(2n) {
+        background: var(--panel-2);
+      }
+
+      .panel h2 {
+        margin: 0 0 12px;
+        font-size: 20px;
+      }
+
+      .panel p.note {
+        margin: 8px 0 0;
+        color: var(--ink-muted);
+        font-size: 14px;
+        line-height: 1.5;
+      }
+
+      .grid {
+        display: grid;
+        gap: 14px;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      }
+
+      .field {
+        display: grid;
+        gap: 6px;
+      }
+
+      label {
+        font-size: 13px;
+        color: var(--ink-muted);
+        min-height: 22px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex-wrap: wrap;
+      }
+
+      input[type="file"],
+      select {
+        width: 100%;
+        padding: 11px 12px;
+        border-radius: 12px;
+        border: 1px solid rgba(26, 26, 26, 0.14);
+        background: #fffdf9;
+        color: var(--ink);
+        font: inherit;
+      }
+
+      .choices {
+        display: grid;
+        gap: 10px;
+      }
+
+      .choice {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        padding: 12px 14px;
+        border-radius: 14px;
+        border: 1px solid var(--line);
+        background: rgba(255, 255, 255, 0.55);
+      }
+
+      .choice input {
+        margin-top: 2px;
+      }
+
+      .choice strong {
+        display: block;
+        font-size: 14px;
+      }
+
+      .choice small {
+        display: block;
+        margin-top: 2px;
+        color: var(--ink-muted);
+        line-height: 1.35;
+      }
+
+      .choice.disabled {
+        opacity: 0.58;
+      }
+
+      .actions,
+      .button-row {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+
+      button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 10px 16px;
+        border-radius: 999px;
+        border: 1px solid transparent;
+        background: var(--accent);
+        color: #fff;
+        font: inherit;
+        cursor: pointer;
+      }
+
+      button.secondary {
+        background: transparent;
+        color: var(--accent-2);
+        border-color: rgba(46, 106, 138, 0.4);
+      }
+
+      button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      .status {
+        min-height: 22px;
+        font-size: 14px;
+        color: var(--ink-muted);
+      }
+
+      .status.ok {
+        color: var(--ok);
+      }
+
+      .status.warn {
+        color: var(--warn);
+      }
+
+      .status.error {
+        color: var(--danger);
+      }
+
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 10px;
+        border-radius: 999px;
+        background: rgba(46, 106, 138, 0.1);
+        color: var(--accent-2);
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+      }
+
+      .results-grid {
+        display: grid;
+        gap: 14px;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      }
+
+      .metric-card {
+        background: rgba(255, 255, 255, 0.72);
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        padding: 16px;
+        display: grid;
+        gap: 6px;
+      }
+
+      .metric-card-header {
+        display: grid;
+        gap: 2px;
+      }
+
+      .metric-card h3 {
+        margin: 0;
+        font-size: 14px;
+        color: var(--ink-muted);
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+
+      .metric-card .metric-name {
+        font-size: 12px;
+        color: #6b625a;
+        line-height: 1.35;
+      }
+
+      .metric-card .metric-formula {
+        font-size: 12px;
+        color: var(--accent-2);
+        line-height: 1.35;
+      }
+
+      .metric-card .value {
+        font-size: clamp(24px, 4vw, 34px);
+        font-weight: 700;
+      }
+
+      .metric-card small {
+        color: var(--ink-muted);
+        line-height: 1.35;
+      }
+
+      .summary-box {
+        display: grid;
+        gap: 8px;
+        padding: 14px 16px;
+        border-radius: 14px;
+        border: 1px solid var(--line);
+        background: rgba(255, 255, 255, 0.5);
+      }
+
+      .summary-box strong {
+        font-size: 14px;
+      }
+
+      .table-wrap {
+        overflow: auto;
+        border-radius: 16px;
+        border: 1px solid var(--line);
+        background: rgba(255, 255, 255, 0.7);
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 880px;
+      }
+
+      th,
+      td {
+        padding: 10px 12px;
+        border-bottom: 1px solid rgba(26, 26, 26, 0.09);
+        text-align: left;
+        vertical-align: top;
+        font-size: 14px;
+      }
+
+      th {
+        position: sticky;
+        top: 0;
+        background: #fbf6ef;
+        color: var(--ink-muted);
+        font-size: 12px;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+
+      td.num {
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+      }
+
+      td code {
+        background: rgba(46, 106, 138, 0.08);
+        padding: 1px 6px;
+        border-radius: 6px;
+      }
+
+      .assumption-list {
+        display: grid;
+        gap: 10px;
+      }
+
+      .radio-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      .radio-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 12px;
+        border-radius: 999px;
+        border: 1px solid var(--line);
+        background: rgba(255, 255, 255, 0.55);
+      }
+
+      .help-box {
+        padding: 12px 14px;
+        border-radius: 14px;
+        background: rgba(192, 107, 62, 0.08);
+        color: #6e3e20;
+        line-height: 1.45;
+        font-size: 14px;
+      }
+
+      .copy-fallback {
+        position: fixed;
+        inset: 0;
+        z-index: 20;
+        display: grid;
+        place-items: center;
+        padding: 18px;
+        background: rgba(26, 26, 26, 0.42);
+      }
+
+      .copy-fallback[hidden] {
+        display: none;
+      }
+
+      .copy-fallback-card {
+        width: min(840px, 100%);
+        max-height: min(86vh, 900px);
+        display: grid;
+        gap: 14px;
+        padding: 18px;
+        border-radius: 18px;
+        background: #fffaf3;
+        box-shadow: 0 20px 48px rgba(0, 0, 0, 0.24);
+      }
+
+      .copy-fallback-card h3 {
+        margin: 0;
+        font-size: 20px;
+      }
+
+      .copy-fallback-card p {
+        margin: 0;
+        color: var(--ink-muted);
+        line-height: 1.45;
+      }
+
+      .copy-fallback-card textarea {
+        width: 100%;
+        min-height: 280px;
+        resize: vertical;
+        padding: 12px;
+        border-radius: 14px;
+        border: 1px solid var(--line);
+        background: #fffdf9;
+        color: var(--ink);
+        font: 13px/1.45 Consolas, "Courier New", monospace;
+      }
+
+      footer {
+        text-align: center;
+        padding: 0 18px 24px;
+        color: #8a3c1a;
+        font-size: 16px;
+        font-weight: 600;
+      }
+
+      @keyframes rise {
+        from {
+          opacity: 0;
+          transform: translateY(18px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @media (max-width: 720px) {
+        .radio-row,
+        .actions,
+        .button-row {
+          flex-direction: column;
+          align-items: stretch;
+        }
+
+        button {
+          width: 100%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <p>Hi TBD Team!</p>
+      <h1>PGI Metrics Helper</h1>
+      <p>
+        Upload a PGI workbook, pick a process step, and calculate material-efficiency
+        metrics locally in the browser. No file leaves your machine.
+      </p>
+      <p><a href="index.html">Back to home</a></p>
+    </header>
+
+    <main>
+      <section class="panel">
+        <h2>Workbook</h2>
+        <div class="grid">
+          <div class="field">
+            <label for="workbook-file">Upload PGI workbook (`.xlsx` or `.xlsm`)</label>
+            <input id="workbook-file" type="file" accept=".xlsx,.xlsm" />
+          </div>
+          <div class="field">
+            <label for="tp-select">Select TP</label>
+            <select id="tp-select" disabled>
+              <option value="">Upload a workbook first</option>
+            </select>
+          </div>
+        </div>
+        <div class="button-row" style="margin-top: 14px">
+          <span class="pill" id="workbook-pill">No workbook loaded</span>
+          <button class="secondary" id="clear-workbook" type="button">Clear workbook</button>
+        </div>
+        <div class="status" id="workbook-status"></div>
+        <p class="note">
+          Expected sheets: `PGI` for all metrics and `Chemical data ref sheet` for `RME`.
+        </p>
+      </section>
+
+      <section class="panel">
+        <h2>Metrics</h2>
+        <div class="choices">
+          <label class="choice" for="metric-pmi">
+            <input id="metric-pmi" type="checkbox" checked />
+            <span>
+              <strong>PMI</strong>
+              <small>Total input mass divided by gross product mass before sample retention.</small>
+            </span>
+          </label>
+          <label class="choice" for="metric-efactor">
+            <input id="metric-efactor" type="checkbox" checked />
+            <span>
+              <strong>E-factor</strong>
+              <small>`PMI - 1`, using the same gross product mass basis.</small>
+            </span>
+          </label>
+          <label class="choice" for="metric-rme">
+            <input id="metric-rme" type="checkbox" checked />
+            <span>
+              <strong>RME</strong>
+              <small>
+                Product mass divided by reactive input mass, using explicit row-selection
+                assumptions.
+              </small>
+            </span>
+          </label>
+          <label class="choice disabled" for="metric-ae">
+            <input id="metric-ae" type="checkbox" disabled />
+            <span>
+              <strong>AE</strong>
+              <small>
+                Experimental. Disabled in v1 because solution reagent purity is not encoded
+                cleanly in the workbook.
+              </small>
+            </span>
+          </label>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>Assumptions</h2>
+        <div class="assumption-list">
+          <div class="field">
+            <label>RME reactive-input rule</label>
+            <div class="radio-row">
+              <label class="radio-chip" for="rme-solvents-only">
+                <input
+                  id="rme-solvents-only"
+                  name="rme-rule"
+                  type="radio"
+                  value="solvents-only"
+                />
+                <span>Exclude solvents only</span>
+              </label>
+              <label class="radio-chip" for="rme-solvents-workup">
+                <input
+                  id="rme-solvents-workup"
+                  name="rme-rule"
+                  type="radio"
+                  value="solvents-workup"
+                  checked
+                />
+                <span>Exclude solvents and workup rows</span>
+              </label>
+            </div>
+          </div>
+        </div>
+        <div class="help-box" style="margin-top: 14px">
+          Product output is always taken from `U` on the product row, before any retention
+          sample deduction reflected in `Y`.
+        </div>
+        <div class="help-box" style="margin-top: 14px">
+          `RME` depends on row classification. The page will show the exact rows included in
+          the denominator so the user can verify the assumption.
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>Calculate</h2>
+        <div class="actions">
+          <button id="calculate-button" type="button" disabled>Calculate</button>
+          <button class="secondary" id="copy-summary" type="button" disabled>Copy summary</button>
+          <button class="secondary" id="copy-details" type="button" disabled>Copy details</button>
+          <button class="secondary" id="download-csv" type="button" disabled>Download CSV</button>
+          <button class="secondary" id="download-json" type="button" disabled>Download JSON</button>
+        </div>
+        <div class="status" id="calc-status"></div>
+      </section>
+
+      <section class="panel">
+        <h2>Results</h2>
+        <div class="results-grid" id="results-grid">
+          <div class="metric-card">
+            <h3>Waiting</h3>
+            <div class="value">-</div>
+            <small>Upload a workbook and run a TP calculation.</small>
+          </div>
+        </div>
+        <div class="grid" style="margin-top: 14px">
+          <div class="summary-box">
+            <strong>Selected TP</strong>
+            <div id="summary-tp">-</div>
+          </div>
+          <div class="summary-box">
+            <strong>Product output basis</strong>
+            <div id="summary-denominator">-</div>
+          </div>
+          <div class="summary-box">
+            <strong>TP range</strong>
+            <div id="summary-range">-</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>Row Details</h2>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Row</th>
+                <th>Role</th>
+                <th>Name</th>
+                <th>CAS</th>
+                <th>MW (g/mol)</th>
+                <th>Comment</th>
+                <th>Mass U (kg)</th>
+                <th>Input</th>
+                <th>RME</th>
+              </tr>
+            </thead>
+            <tbody id="details-body">
+              <tr>
+                <td colspan="9">No calculation yet.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      Prototype calculator. Review assumptions, sheet structure, and row inclusion before use.
+    </footer>
+
+    <div class="copy-fallback" id="copy-fallback" hidden>
+      <div class="copy-fallback-card" role="dialog" aria-modal="true" aria-labelledby="copy-fallback-title">
+        <h3 id="copy-fallback-title">Manual copy</h3>
+        <p>
+          Clipboard access is blocked in this preview. The text is ready below for manual
+          copy.
+        </p>
+        <textarea id="copy-fallback-text" readonly spellcheck="false"></textarea>
+        <div class="actions">
+          <button type="button" id="copy-fallback-select">Select text</button>
+          <button class="secondary" type="button" id="copy-fallback-close">Close</button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const workbookFileInput = document.getElementById("workbook-file");
+      const tpSelect = document.getElementById("tp-select");
+      const workbookStatus = document.getElementById("workbook-status");
+      const workbookPill = document.getElementById("workbook-pill");
+      const clearWorkbookButton = document.getElementById("clear-workbook");
+      const calculateButton = document.getElementById("calculate-button");
+      const calcStatus = document.getElementById("calc-status");
+      const resultsGrid = document.getElementById("results-grid");
+      const summaryTp = document.getElementById("summary-tp");
+      const summaryDenominator = document.getElementById("summary-denominator");
+      const summaryRange = document.getElementById("summary-range");
+      const detailsBody = document.getElementById("details-body");
+      const copySummaryButton = document.getElementById("copy-summary");
+      const copyDetailsButton = document.getElementById("copy-details");
+      const downloadCsvButton = document.getElementById("download-csv");
+      const downloadJsonButton = document.getElementById("download-json");
+      const copyFallback = document.getElementById("copy-fallback");
+      const copyFallbackTitle = document.getElementById("copy-fallback-title");
+      const copyFallbackText = document.getElementById("copy-fallback-text");
+      const copyFallbackSelectButton = document.getElementById("copy-fallback-select");
+      const copyFallbackCloseButton = document.getElementById("copy-fallback-close");
+
+      const metricInputs = {
+        pmi: document.getElementById("metric-pmi"),
+        efactor: document.getElementById("metric-efactor"),
+        rme: document.getElementById("metric-rme"),
+        ae: document.getElementById("metric-ae"),
+      };
+
+      const rmeRuleInputs = Array.from(document.querySelectorAll('input[name="rme-rule"]'));
+
+      const WORKUP_PATTERNS = [
+        /wash/i,
+        /washing/i,
+        /co-evap/i,
+        /co-evop/i,
+        /solvent exchange/i,
+        /for quench/i,
+        /buffer/i,
+        /retention sample/i,
+      ];
+
+      const state = {
+        workbookName: "",
+        pgiRows: [],
+        chemicalTypes: new Map(),
+        tps: [],
+        lastResult: null,
+      };
+
+      function setStatus(element, message, kind = "") {
+        element.textContent = message;
+        element.className = kind ? `status ${kind}` : "status";
+      }
+
+      function getSelectedRmeRule() {
+        return rmeRuleInputs.find((input) => input.checked)?.value || "solvents-workup";
+      }
+
+      function getSelectedMetrics() {
+        return Object.entries(metricInputs)
+          .filter(([, input]) => input.checked)
+          .map(([key]) => key);
+      }
+
+      function updateControls() {
+        const ready = state.pgiRows.length > 0;
+        tpSelect.disabled = !ready || state.tps.length === 0;
+        calculateButton.disabled = !ready || !tpSelect.value || getSelectedMetrics().length === 0;
+      }
+
+      function resetResults() {
+        state.lastResult = null;
+        resultsGrid.innerHTML = `
+          <div class="metric-card">
+            <h3>Waiting</h3>
+            <div class="value">-</div>
+            <small>Upload a workbook and run a TP calculation.</small>
+          </div>
+        `;
+        summaryTp.textContent = "-";
+        summaryDenominator.textContent = "-";
+        summaryRange.textContent = "-";
+        detailsBody.innerHTML = `<tr><td colspan="9">No calculation yet.</td></tr>`;
+        copySummaryButton.disabled = true;
+        copyDetailsButton.disabled = true;
+        downloadCsvButton.disabled = true;
+        downloadJsonButton.disabled = true;
+        closeCopyFallback();
+      }
+
+      function clearWorkbookState() {
+        state.workbookName = "";
+        state.pgiRows = [];
+        state.chemicalTypes = new Map();
+        state.tps = [];
+        workbookFileInput.value = "";
+        tpSelect.innerHTML = `<option value="">Upload a workbook first</option>`;
+        workbookPill.textContent = "No workbook loaded";
+        setStatus(workbookStatus, "");
+        setStatus(calcStatus, "");
+        resetResults();
+        updateControls();
+      }
+
+      function normalizeText(value) {
+        return String(value || "").trim();
+      }
+
+      function normalizeCas(value) {
+        return normalizeText(value).toUpperCase();
+      }
+
+      function toNumber(value) {
+        const trimmed = normalizeText(value);
+        if (!trimmed) {
+          return NaN;
+        }
+        const number = Number(trimmed);
+        return Number.isFinite(number) ? number : NaN;
+      }
+
+      function formatNumber(value, digits = 3) {
+        if (!Number.isFinite(value)) {
+          return "-";
+        }
+        return new Intl.NumberFormat("en-US", {
+          maximumFractionDigits: digits,
+          minimumFractionDigits: digits > 0 ? Math.min(2, digits) : 0,
+        }).format(value);
+      }
+
+      function formatPercent(value) {
+        if (!Number.isFinite(value)) {
+          return "-";
+        }
+        return `${formatNumber(value * 100, 2)}%`;
+      }
+
+      function getMetricExplanation(metricKey) {
+        const explanations = {
+          pmi: {
+            name: "Process Mass Intensity",
+            formula: "Calculated as total input mass / gross product mass",
+          },
+          efactor: {
+            name: "Environmental Factor",
+            formula: "Calculated as (input mass - product mass) / product mass",
+          },
+          rme: {
+            name: "Reaction Mass Efficiency",
+            formula: "Calculated as gross product mass / reactive input mass",
+          },
+          ae: {
+            name: "Atom Economy",
+            formula: "Experimental; not calculated in v1",
+          },
+        };
+        return explanations[metricKey] || { name: "", formula: "" };
+      }
+
+      function findEocdOffset(bytes) {
+        for (let index = bytes.length - 22; index >= Math.max(0, bytes.length - 66000); index -= 1) {
+          if (
+            bytes[index] === 0x50 &&
+            bytes[index + 1] === 0x4b &&
+            bytes[index + 2] === 0x05 &&
+            bytes[index + 3] === 0x06
+          ) {
+            return index;
+          }
+        }
+        throw new Error("ZIP end-of-central-directory record was not found.");
+      }
+
+      function readUint16(bytes, offset) {
+        return bytes[offset] | (bytes[offset + 1] << 8);
+      }
+
+      function readUint32(bytes, offset) {
+        return (
+          bytes[offset] |
+          (bytes[offset + 1] << 8) |
+          (bytes[offset + 2] << 16) |
+          (bytes[offset + 3] << 24)
+        ) >>> 0;
+      }
+
+      function decodeBytes(bytes, useUtf8 = true) {
+        return new TextDecoder(useUtf8 ? "utf-8" : "windows-1252").decode(bytes);
+      }
+
+      function parseZipEntries(bytes) {
+        const eocdOffset = findEocdOffset(bytes);
+        const entryCount = readUint16(bytes, eocdOffset + 10);
+        const centralDirectoryOffset = readUint32(bytes, eocdOffset + 16);
+        let offset = centralDirectoryOffset;
+        const entries = [];
+
+        for (let index = 0; index < entryCount; index += 1) {
+          if (readUint32(bytes, offset) !== 0x02014b50) {
+            throw new Error("Invalid ZIP central directory header.");
+          }
+          const generalPurposeFlag = readUint16(bytes, offset + 8);
+          const compressionMethod = readUint16(bytes, offset + 10);
+          const compressedSize = readUint32(bytes, offset + 20);
+          const fileNameLength = readUint16(bytes, offset + 28);
+          const extraLength = readUint16(bytes, offset + 30);
+          const commentLength = readUint16(bytes, offset + 32);
+          const localHeaderOffset = readUint32(bytes, offset + 42);
+          const nameBytes = bytes.subarray(offset + 46, offset + 46 + fileNameLength);
+          const name = decodeBytes(nameBytes, Boolean(generalPurposeFlag & 0x0800));
+
+          entries.push({
+            name,
+            compressionMethod,
+            compressedSize,
+            localHeaderOffset,
+          });
+
+          offset += 46 + fileNameLength + extraLength + commentLength;
+        }
+
+        return entries;
+      }
+
+      async function inflateRaw(data) {
+        if (typeof DecompressionStream === "undefined") {
+          throw new Error("This browser does not support workbook decompression.");
+        }
+        const stream = new Blob([data]).stream().pipeThrough(new DecompressionStream("deflate-raw"));
+        const buffer = await new Response(stream).arrayBuffer();
+        return new Uint8Array(buffer);
+      }
+
+      async function extractZipEntry(bytes, entry) {
+        const offset = entry.localHeaderOffset;
+        if (readUint32(bytes, offset) !== 0x04034b50) {
+          throw new Error(`Invalid ZIP local header for ${entry.name}.`);
+        }
+        const fileNameLength = readUint16(bytes, offset + 26);
+        const extraLength = readUint16(bytes, offset + 28);
+        const start = offset + 30 + fileNameLength + extraLength;
+        const compressed = bytes.subarray(start, start + entry.compressedSize);
+
+        if (entry.compressionMethod === 0) {
+          return compressed;
+        }
+        if (entry.compressionMethod === 8) {
+          return inflateRaw(compressed);
+        }
+        throw new Error(`Unsupported ZIP compression method ${entry.compressionMethod} for ${entry.name}.`);
+      }
+
+      async function unzipWorkbook(arrayBuffer) {
+        const bytes = new Uint8Array(arrayBuffer);
+        const entries = parseZipEntries(bytes);
+        const files = new Map();
+        for (const entry of entries) {
+          files.set(entry.name, await extractZipEntry(bytes, entry));
+        }
+        return files;
+      }
+
+      function getXmlDoc(files, path) {
+        const bytes = files.get(path);
+        if (!bytes) {
+          return null;
+        }
+        return new DOMParser().parseFromString(decodeBytes(bytes), "application/xml");
+      }
+
+      function textFromNode(node) {
+        return node ? node.textContent || "" : "";
+      }
+
+      function parseSharedStrings(doc) {
+        if (!doc) {
+          return [];
+        }
+        return Array.from(doc.getElementsByTagName("si")).map((item) => item.textContent || "");
+      }
+
+      function getRelationshipId(node) {
+        return (
+          node.getAttribute("r:id") ||
+          node.getAttributeNS("http://schemas.openxmlformats.org/officeDocument/2006/relationships", "id") ||
+          ""
+        );
+      }
+
+      function resolveZipPath(basePath, target) {
+        const baseParts = basePath.split("/");
+        baseParts.pop();
+        const targetParts = target.split("/");
+        const parts = baseParts;
+        for (const part of targetParts) {
+          if (!part || part === ".") {
+            continue;
+          }
+          if (part === "..") {
+            parts.pop();
+          } else {
+            parts.push(part);
+          }
+        }
+        return parts.join("/");
+      }
+
+      function getSheetTargets(files) {
+        const workbookDoc = getXmlDoc(files, "xl/workbook.xml");
+        const relsDoc = getXmlDoc(files, "xl/_rels/workbook.xml.rels");
+        if (!workbookDoc || !relsDoc) {
+          throw new Error("Workbook structure is incomplete.");
+        }
+
+        const relationships = new Map();
+        for (const rel of Array.from(relsDoc.getElementsByTagName("Relationship"))) {
+          relationships.set(rel.getAttribute("Id"), resolveZipPath("xl/workbook.xml", rel.getAttribute("Target")));
+        }
+
+        return Array.from(workbookDoc.getElementsByTagName("sheet")).map((sheet) => ({
+          name: sheet.getAttribute("name") || "",
+          path: relationships.get(getRelationshipId(sheet)) || "",
+        }));
+      }
+
+      function getCellValue(cell, sharedStrings) {
+        const type = cell.getAttribute("t") || "";
+        if (type === "s") {
+          return sharedStrings[Number(textFromNode(cell.getElementsByTagName("v")[0]))] || "";
+        }
+        if (type === "inlineStr") {
+          return textFromNode(cell.getElementsByTagName("is")[0]);
+        }
+        if (type === "str") {
+          return textFromNode(cell.getElementsByTagName("v")[0]);
+        }
+        const valueNode = cell.getElementsByTagName("v")[0];
+        return valueNode ? textFromNode(valueNode) : "";
+      }
+
+      function parseWorksheetRows(doc, sharedStrings) {
+        const rows = [];
+        for (const rowNode of Array.from(doc.getElementsByTagName("row"))) {
+          const rowNumber = Number(rowNode.getAttribute("r"));
+          const cells = {};
+          for (const cell of Array.from(rowNode.getElementsByTagName("c"))) {
+            const ref = cell.getAttribute("r") || "";
+            const column = ref.replace(/\d+/g, "");
+            cells[column] = getCellValue(cell, sharedStrings);
+          }
+          rows.push({ rowNumber, cells });
+        }
+        return rows;
+      }
+
+      function parsePgiRows(rows) {
+        return rows
+          .map((row) => ({
+            rowNumber: row.rowNumber,
+            reactionStep: normalizeText(row.cells.A),
+            intermediateProduct: normalizeText(row.cells.B),
+            limitingReactant: normalizeText(row.cells.C),
+            chemicalName: normalizeText(row.cells.D),
+            cas: normalizeText(row.cells.E),
+            comments: normalizeText(row.cells.F),
+            molarMass: toNumber(row.cells.H),
+            avgYield: toNumber(row.cells.O),
+            retentionSampleG: toNumber(row.cells.P),
+            mainReactantMass: toNumber(row.cells.S),
+            kmol: toNumber(row.cells.T),
+            massU: toNumber(row.cells.U),
+            massY: toNumber(row.cells.Y),
+          }))
+          .filter((row) => row.reactionStep || row.chemicalName || Number.isFinite(row.massU));
+      }
+
+      function parseChemicalTypes(rows) {
+        const typeMap = new Map();
+        for (const row of rows) {
+          const cas = normalizeCas(row.cells.A);
+          const type = normalizeText(row.cells.I).toLowerCase();
+          if (cas && type) {
+            typeMap.set(cas, type);
+          }
+        }
+        return typeMap;
+      }
+
+      function buildTpOptions(rows) {
+        const grouped = new Map();
+        for (const row of rows) {
+          if (!row.reactionStep.startsWith("TP")) {
+            continue;
+          }
+          if (!grouped.has(row.reactionStep)) {
+            grouped.set(row.reactionStep, []);
+          }
+          grouped.get(row.reactionStep).push(row);
+        }
+        return Array.from(grouped.entries())
+          .map(([tp, tpRows]) => {
+            const sorted = tpRows.slice().sort((a, b) => a.rowNumber - b.rowNumber);
+            const productRow = sorted.filter((row) => row.intermediateProduct).pop() || null;
+            return {
+              tp,
+              rows: sorted,
+              startRow: sorted[0]?.rowNumber || 0,
+              endRow: sorted[sorted.length - 1]?.rowNumber || 0,
+              productRow,
+            };
+          })
+          .filter((group) => group.productRow && group.rows.length > 1)
+          .sort((left, right) => left.startRow - right.startRow);
+      }
+
+      function populateTpSelect() {
+        if (state.tps.length === 0) {
+          tpSelect.innerHTML = `<option value="">No calculable TP blocks found</option>`;
+          return;
+        }
+        tpSelect.innerHTML = [
+          `<option value="">Select a TP</option>`,
+          ...state.tps.map(
+            (group) =>
+              `<option value="${group.tp}">${group.tp} (rows ${group.startRow}-${group.endRow})</option>`,
+          ),
+        ].join("");
+      }
+
+      function getTpGroup(tp) {
+        return state.tps.find((group) => group.tp === tp) || null;
+      }
+
+      function determineProductMass(productRow) {
+        return productRow.massU;
+      }
+
+      function getTpStartingMaterialCode(rows) {
+        return rows.find((row) => row.limitingReactant)?.limitingReactant || "";
+      }
+
+      function getTpStartingMaterialMass(rows) {
+        return rows.find((row) => Number.isFinite(row.mainReactantMass) && row.mainReactantMass > 0)?.mainReactantMass ?? NaN;
+      }
+
+      function findTrackedMaterialRow(materialCode, beforeRowNumber = Number.POSITIVE_INFINITY) {
+        const matches = state.pgiRows.filter(
+          (row) => row.intermediateProduct === materialCode && row.rowNumber < beforeRowNumber,
+        );
+        if (matches.length > 0) {
+          return matches[matches.length - 1];
+        }
+        const fallbackMatches = state.pgiRows.filter((row) => row.intermediateProduct === materialCode);
+        return fallbackMatches.length > 0 ? fallbackMatches[fallbackMatches.length - 1] : null;
+      }
+
+      function formatTrackedMaterialName(materialCode, referenceRow) {
+        if (referenceRow?.chemicalName && referenceRow.chemicalName !== materialCode) {
+          return `${materialCode}: ${referenceRow.chemicalName}`;
+        }
+        return referenceRow?.chemicalName || materialCode;
+      }
+
+      function isSolutionLikeRow(row) {
+        const text = `${row.chemicalName || ""} ${row.comments || ""}`.toLowerCase();
+        return text.includes("solution") || /(^|[^a-z])\d+(\.\d+)?\s*%/.test(text);
+      }
+
+      function formatMolarMass(row) {
+        return Number.isFinite(row.molarMass) && !isSolutionLikeRow(row) ? formatNumber(row.molarMass, 2) : "";
+      }
+
+      function buildStartingMaterialRow(tpGroup, rows, inputRows) {
+        const materialCode = getTpStartingMaterialCode(rows);
+        const materialMass = getTpStartingMaterialMass(rows);
+        if (!materialCode || !Number.isFinite(materialMass) || materialMass <= 0) {
+          return null;
+        }
+
+        const alreadyPresent = inputRows.some((row) => row.intermediateProduct === materialCode);
+        if (alreadyPresent) {
+          return null;
+        }
+
+        const referenceRow = findTrackedMaterialRow(materialCode, tpGroup.startRow);
+        const sourceText =
+          referenceRow?.reactionStep && Number.isFinite(referenceRow?.rowNumber)
+            ? `Tracked from limiting reactant ${materialCode}; source ${referenceRow.reactionStep} row ${referenceRow.rowNumber}`
+            : `Tracked from limiting reactant ${materialCode}`;
+
+        return {
+          rowNumber: tpGroup.startRow - 0.5,
+          rowLabel: "Start",
+          reactionStep: tpGroup.tp,
+          intermediateProduct: materialCode,
+          limitingReactant: materialCode,
+          chemicalName: formatTrackedMaterialName(materialCode, referenceRow),
+          cas: referenceRow?.cas || "",
+          comments: sourceText,
+          molarMass: referenceRow?.molarMass ?? NaN,
+          avgYield: NaN,
+          retentionSampleG: NaN,
+          mainReactantMass: materialMass,
+          kmol: NaN,
+          massU: materialMass,
+          massY: materialMass,
+          syntheticStartingMaterial: true,
+        };
+      }
+
+      function classifyReactiveRows(inputRows, productRow, rmeRule) {
+        return inputRows.map((row) => {
+          const type = state.chemicalTypes.get(normalizeCas(row.cas)) || "";
+          const comment = normalizeText(row.comments);
+          const isMainStartingRow = row.intermediateProduct && row.rowNumber !== productRow.rowNumber;
+          let include = Number.isFinite(row.massU) && row.massU > 0;
+
+          if (include && !isMainStartingRow && type === "solvent") {
+            include = false;
+          }
+
+          if (include && rmeRule === "solvents-workup") {
+            if (WORKUP_PATTERNS.some((pattern) => pattern.test(comment))) {
+              include = false;
+            }
+          }
+
+          return {
+            ...row,
+            type: type || "-",
+            reactiveForRme: include,
+          };
+        });
+      }
+
+      function buildResult(tpGroup) {
+        const rmeRule = getSelectedRmeRule();
+        const selectedMetrics = getSelectedMetrics();
+        const rows = tpGroup.rows.slice().sort((a, b) => a.rowNumber - b.rowNumber);
+        const productRow = tpGroup.productRow;
+        const baseInputRows = rows.filter(
+          (row) => row.rowNumber < productRow.rowNumber && row.chemicalName && Number.isFinite(row.massU) && row.massU > 0,
+        );
+        const startingMaterialRow = buildStartingMaterialRow(tpGroup, rows, baseInputRows);
+        const inputRows = startingMaterialRow ? [startingMaterialRow, ...baseInputRows] : baseInputRows;
+
+        if (!productRow || inputRows.length === 0) {
+          throw new Error("The selected TP does not have a calculable product/input structure.");
+        }
+
+        const productMass = determineProductMass(productRow);
+        if (!Number.isFinite(productMass) || productMass <= 0) {
+          throw new Error("The selected TP product mass is missing or zero.");
+        }
+
+        const totalInputMass = inputRows.reduce((sum, row) => sum + row.massU, 0);
+        const reactiveRows = classifyReactiveRows(inputRows, productRow, rmeRule);
+        const reactiveMass = reactiveRows
+          .filter((row) => row.reactiveForRme)
+          .reduce((sum, row) => sum + row.massU, 0);
+
+        const metrics = [];
+
+        if (selectedMetrics.includes("pmi")) {
+          metrics.push({
+            key: "pmi",
+            label: "PMI",
+            value: totalInputMass / productMass,
+            secondary: `${formatNumber(totalInputMass, 3)} kg input / ${formatNumber(productMass, 3)} kg product`,
+          });
+        }
+
+        if (selectedMetrics.includes("efactor")) {
+          metrics.push({
+            key: "efactor",
+            label: "E-factor",
+            value: totalInputMass / productMass - 1,
+            secondary: "Uses the same denominator as PMI",
+          });
+        }
+
+        if (selectedMetrics.includes("rme")) {
+          metrics.push({
+            key: "rme",
+            label: "RME",
+            value: reactiveMass > 0 ? productMass / reactiveMass : NaN,
+            secondary:
+              reactiveMass > 0
+                ? `${formatNumber(productMass, 3)} kg product / ${formatNumber(reactiveMass, 3)} kg reactive input`
+                : "Reactive input mass could not be determined",
+          });
+        }
+
+        if (selectedMetrics.includes("ae")) {
+          metrics.push({
+            key: "ae",
+            label: "AE",
+            value: NaN,
+            secondary: "AE is disabled in v1 because solution reagent purity is not structured.",
+          });
+        }
+
+        const detailRows = (startingMaterialRow ? [startingMaterialRow, ...rows] : rows).map((row) => {
+          const reactiveMatch = reactiveRows.find((candidate) => candidate.rowNumber === row.rowNumber);
+          const isProductRow = row.rowNumber === productRow.rowNumber;
+          const isInputRow = inputRows.some((candidate) => candidate.rowNumber === row.rowNumber);
+          let role = "Other";
+          if (row.syntheticStartingMaterial) {
+            role = "Starting material";
+          } else if (isProductRow) {
+            role = "Product";
+          } else if (row.intermediateProduct) {
+            role = "Tagged material";
+          } else if (isInputRow) {
+            role = "Input";
+          }
+          return {
+            ...row,
+            role,
+            mwDisplay: formatMolarMass(row),
+            inputForPmi: isInputRow,
+            reactiveForRme: reactiveMatch ? reactiveMatch.reactiveForRme : false,
+          };
+        });
+
+        return {
+          tp: tpGroup.tp,
+          startRow: tpGroup.startRow,
+          endRow: tpGroup.endRow,
+          rmeRule,
+          productRow,
+          productMass,
+          totalInputMass,
+          reactiveMass,
+          metrics,
+          detailRows,
+        };
+      }
+
+      function renderResults(result) {
+        const cards = result.metrics
+          .map((metric) => {
+            const displayValue =
+              metric.key === "rme" ? formatPercent(metric.value) : formatNumber(metric.value, 3);
+            const explanation = getMetricExplanation(metric.key);
+            const note =
+              metric.key === "rme" && Number.isFinite(metric.value)
+                ? `${metric.secondary}; ratio ${formatNumber(metric.value, 4)}`
+                : metric.secondary;
+            return `
+              <div class="metric-card">
+                <div class="metric-card-header">
+                  <h3>${metric.label}</h3>
+                  <div class="metric-name">${explanation.name}</div>
+                  <div class="metric-formula">${explanation.formula}</div>
+                </div>
+                <div class="value">${displayValue}</div>
+                <small>${note}</small>
+              </div>
+            `;
+          })
+          .join("");
+
+        resultsGrid.innerHTML =
+          cards ||
+          `
+          <div class="metric-card">
+            <h3>No metrics selected</h3>
+            <div class="value">-</div>
+            <small>Select at least one metric.</small>
+          </div>
+        `;
+
+        summaryTp.textContent = `${result.tp} (rows ${result.startRow}-${result.endRow})`;
+        summaryDenominator.textContent = `Gross output (U): ${formatNumber(result.productMass, 3)} kg`;
+        summaryRange.textContent = `Product row ${result.productRow.rowNumber}; input rows before it`;
+
+        detailsBody.innerHTML = result.detailRows
+          .filter((row) => row.chemicalName || row.role === "Product")
+          .map(
+            (row) => `
+              <tr>
+                <td>${row.rowLabel || row.rowNumber}</td>
+                <td>${row.role}</td>
+                <td>${row.chemicalName || "-"}</td>
+                <td><code>${row.cas || "-"}</code></td>
+                <td class="num">${row.mwDisplay || ""}</td>
+                <td>${row.comments || "-"}</td>
+                <td class="num">${formatNumber(row.massU, 3)}</td>
+                <td>${row.inputForPmi ? "Yes" : ""}</td>
+                <td>${row.reactiveForRme ? "Yes" : ""}</td>
+              </tr>
+            `,
+          )
+          .join("");
+
+        copySummaryButton.disabled = false;
+        copyDetailsButton.disabled = false;
+        downloadCsvButton.disabled = false;
+        downloadJsonButton.disabled = false;
+      }
+
+      function buildSummaryText(result) {
+        const lines = [
+          `PGI Metrics Summary`,
+          ``,
+          `Workbook: ${state.workbookName}`,
+          `TP: ${result.tp}`,
+          `Rows: ${result.startRow}-${result.endRow}`,
+          `Product output basis: Gross output (U), before sample retention`,
+          `Product row: ${result.productRow.rowNumber}`,
+          `Product mass used: ${formatNumber(result.productMass, 6)} kg`,
+          `Total input mass: ${formatNumber(result.totalInputMass, 6)} kg`,
+        ];
+
+        if (Number.isFinite(result.reactiveMass) && result.reactiveMass > 0) {
+          lines.push(`Reactive input mass: ${formatNumber(result.reactiveMass, 6)} kg`);
+        }
+
+        lines.push("");
+        for (const metric of result.metrics) {
+          const value = metric.key === "rme" ? formatPercent(metric.value) : formatNumber(metric.value, 6);
+          lines.push(`${metric.label}: ${value}`);
+          lines.push(`  ${metric.secondary}`);
+        }
+
+        return lines.join("\n");
+      }
+
+      function buildDetailsText(result) {
+        const header = ["row", "role", "name", "cas", "mw_g_mol", "comment", "mass_u_kg", "input_for_pmi", "reactive_for_rme"];
+        const lines = [header.join("\t")];
+        for (const row of result.detailRows) {
+          if (!(row.chemicalName || row.role === "Product")) {
+            continue;
+          }
+          lines.push(
+            [
+              row.rowLabel || row.rowNumber,
+              row.role,
+              row.chemicalName || "",
+              row.cas || "",
+              row.mwDisplay || "",
+              row.comments || "",
+              Number.isFinite(row.massU) ? row.massU : "",
+              row.inputForPmi ? "yes" : "",
+              row.reactiveForRme ? "yes" : "",
+            ].join("\t"),
+          );
+        }
+        return lines.join("\n");
+      }
+
+      function selectCopyFallbackText() {
+        copyFallbackText.focus();
+        copyFallbackText.select();
+        copyFallbackText.setSelectionRange(0, copyFallbackText.value.length);
+      }
+
+      function openCopyFallback(title, text) {
+        copyFallbackTitle.textContent = title;
+        copyFallbackText.value = text;
+        copyFallback.hidden = false;
+        requestAnimationFrame(selectCopyFallbackText);
+      }
+
+      function closeCopyFallback() {
+        copyFallback.hidden = true;
+      }
+
+      async function copyTextToClipboard(text) {
+        if (navigator.clipboard?.writeText) {
+          try {
+            await navigator.clipboard.writeText(text);
+            return;
+          } catch (error) {
+            // Fall through to legacy copy below.
+          }
+        }
+        const textarea = document.createElement("textarea");
+        textarea.value = text;
+        textarea.setAttribute("readonly", "");
+        textarea.style.position = "absolute";
+        textarea.style.left = "-9999px";
+        document.body.appendChild(textarea);
+        textarea.select();
+        textarea.setSelectionRange(0, textarea.value.length);
+        const copied = typeof document.execCommand === "function" && document.execCommand("copy");
+        document.body.removeChild(textarea);
+        if (!copied) {
+          throw new Error("Clipboard access is not available.");
+        }
+      }
+
+      async function handleCopyAction(title, text, successMessage) {
+        try {
+          await copyTextToClipboard(text);
+          setStatus(calcStatus, successMessage, "ok");
+        } catch (error) {
+          openCopyFallback(title, text);
+          setStatus(calcStatus, "Clipboard access is blocked here. Opened text for manual copy.", "warn");
+        }
+      }
+
+      function downloadText(filename, text, type) {
+        const blob = new Blob([text], { type });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        URL.revokeObjectURL(url);
+      }
+
+      async function loadWorkbook(file) {
+        setStatus(workbookStatus, "Reading workbook...", "warn");
+        setStatus(calcStatus, "");
+        resetResults();
+
+        const buffer = await file.arrayBuffer();
+        const files = await unzipWorkbook(buffer);
+        const sharedStrings = parseSharedStrings(getXmlDoc(files, "xl/sharedStrings.xml"));
+        const sheets = getSheetTargets(files);
+        const pgiSheet = sheets.find((sheet) => sheet.name === "PGI");
+        if (!pgiSheet) {
+          throw new Error("`PGI` sheet was not found in the workbook.");
+        }
+
+        const pgiDoc = getXmlDoc(files, pgiSheet.path);
+        if (!pgiDoc) {
+          throw new Error("The `PGI` worksheet could not be read.");
+        }
+
+        const pgiRows = parsePgiRows(parseWorksheetRows(pgiDoc, sharedStrings));
+        const tpGroups = buildTpOptions(pgiRows);
+        if (tpGroups.length === 0) {
+          throw new Error("No calculable TP blocks were found on the `PGI` sheet.");
+        }
+
+        const chemicalSheet = sheets.find((sheet) => sheet.name === "Chemical data ref sheet");
+        let chemicalTypes = new Map();
+        if (chemicalSheet) {
+          const chemicalDoc = getXmlDoc(files, chemicalSheet.path);
+          if (chemicalDoc) {
+            chemicalTypes = parseChemicalTypes(parseWorksheetRows(chemicalDoc, sharedStrings));
+          }
+        }
+
+        state.workbookName = file.name;
+        state.pgiRows = pgiRows;
+        state.chemicalTypes = chemicalTypes;
+        state.tps = tpGroups;
+
+        workbookPill.textContent = `${file.name} loaded`;
+        populateTpSelect();
+        setStatus(
+          workbookStatus,
+          `Loaded ${file.name}. Found ${tpGroups.length} calculable TP blocks${chemicalTypes.size ? " and chemical type lookup support." : "."}`,
+          "ok",
+        );
+        updateControls();
+      }
+
+      workbookFileInput.addEventListener("change", async () => {
+        const file = workbookFileInput.files?.[0];
+        if (!file) {
+          clearWorkbookState();
+          return;
+        }
+        try {
+          await loadWorkbook(file);
+        } catch (error) {
+          clearWorkbookState();
+          setStatus(workbookStatus, error.message || "Workbook could not be read.", "error");
+        }
+      });
+
+      clearWorkbookButton.addEventListener("click", clearWorkbookState);
+
+      tpSelect.addEventListener("change", () => {
+        setStatus(calcStatus, "");
+        resetResults();
+        updateControls();
+      });
+
+      for (const input of Object.values(metricInputs)) {
+        input.addEventListener("change", updateControls);
+      }
+
+      for (const input of rmeRuleInputs) {
+        input.addEventListener("change", () => {
+          if (state.lastResult) {
+            setStatus(calcStatus, "Assumptions changed. Recalculate to refresh results.", "warn");
+          }
+        });
+      }
+
+      calculateButton.addEventListener("click", () => {
+        try {
+          const tpGroup = getTpGroup(tpSelect.value);
+          if (!tpGroup) {
+            throw new Error("Select a TP before calculating.");
+          }
+          const result = buildResult(tpGroup);
+          state.lastResult = result;
+          renderResults(result);
+          setStatus(calcStatus, `Calculated ${result.metrics.length} metric(s) for ${result.tp}.`, "ok");
+        } catch (error) {
+          setStatus(calcStatus, error.message || "Calculation failed.", "error");
+        }
+      });
+
+      copySummaryButton.addEventListener("click", async () => {
+        if (!state.lastResult) {
+          return;
+        }
+        await handleCopyAction("Summary", buildSummaryText(state.lastResult), "Summary copied to clipboard.");
+      });
+
+      copyDetailsButton.addEventListener("click", async () => {
+        if (!state.lastResult) {
+          return;
+        }
+        await handleCopyAction("Detail rows", buildDetailsText(state.lastResult), "Detail rows copied to clipboard.");
+      });
+
+      copyFallbackSelectButton.addEventListener("click", selectCopyFallbackText);
+      copyFallbackCloseButton.addEventListener("click", closeCopyFallback);
+      copyFallback.addEventListener("click", (event) => {
+        if (event.target === copyFallback) {
+          closeCopyFallback();
+        }
+      });
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && !copyFallback.hidden) {
+          closeCopyFallback();
+        }
+      });
+
+      downloadCsvButton.addEventListener("click", () => {
+        if (!state.lastResult) {
+          return;
+        }
+        const header = ["row", "role", "name", "cas", "mw_g_mol", "comment", "mass_u_kg", "input_for_pmi", "reactive_for_rme"];
+        const rows = state.lastResult.detailRows
+          .filter((row) => row.chemicalName || row.role === "Product")
+          .map((row) =>
+            [
+              row.rowLabel || row.rowNumber,
+              row.role,
+              row.chemicalName || "",
+              row.cas || "",
+              row.mwDisplay || "",
+              row.comments || "",
+              Number.isFinite(row.massU) ? row.massU : "",
+              row.inputForPmi ? "yes" : "",
+              row.reactiveForRme ? "yes" : "",
+            ]
+              .map((value) => `"${String(value).replaceAll('"', '""')}"`)
+              .join(","),
+          );
+        downloadText(`${state.lastResult.tp}-details.csv`, [header.join(","), ...rows].join("\n"), "text/csv");
+      });
+
+      downloadJsonButton.addEventListener("click", () => {
+        if (!state.lastResult) {
+          return;
+        }
+        downloadText(
+          `${state.lastResult.tp}-metrics.json`,
+          JSON.stringify(
+            {
+              workbook: state.workbookName,
+              tp: state.lastResult.tp,
+              productBasis: "gross-output-u",
+              rmeRule: state.lastResult.rmeRule,
+              productRow: state.lastResult.productRow,
+              productMass: state.lastResult.productMass,
+              totalInputMass: state.lastResult.totalInputMass,
+              reactiveMass: state.lastResult.reactiveMass,
+              metrics: state.lastResult.metrics,
+              detailRows: state.lastResult.detailRows,
+            },
+            null,
+            2,
+          ),
+          "application/json",
+        );
+      });
+
+      clearWorkbookState();
+    </script>
+  </body>
+</html>
